@@ -1,0 +1,13 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+sliced-art = {editable = true,extras = ["dev"],path = "."}
+
+[packages]
+e1839a8 = {editable = true,path = "."}
+
+[requires]
+python_version = "3.6"
