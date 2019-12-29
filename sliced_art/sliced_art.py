@@ -1,6 +1,7 @@
 import sys
 
-from PySide2.QtGui import QImageReader, QPixmap
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QImageReader, QPixmap, QResizeEvent
 from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QFileDialog
 
 from sliced_art.main_window import Ui_MainWindow
@@ -12,11 +13,12 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.scene = QGraphicsScene(self)
-        self.scene.addText('Hello, Scene!')
+        self.scene.addText('Open an image file.')
         self.ui.graphicsView.setScene(self.scene)
-        # self.ui.start.clicked.connect(self.on_start)
         self.ui.actionExit.triggered.connect(self.close)
         self.ui.actionOpen.triggered.connect(self.open_image)
+
+        self.pixmap = None
 
     def open_image(self):
         formats = QImageReader.supportedImageFormats()
@@ -27,8 +29,22 @@ class MainWindow(QMainWindow):
             "Open an image file.",
             filter=image_filter,
             options=QFileDialog.DontUseNativeDialog)
-        pixmap = QPixmap(file_name)
-        self.scene.addPixmap(pixmap)
+        self.pixmap = QPixmap(file_name)
+        self.scale_image()
+
+    def scale_image(self):
+        if self.pixmap is None:
+            return
+
+        self.scene.clear()
+        view_size = self.ui.graphicsView.maximumViewportSize()
+        scaled = self.pixmap.scaled(view_size,
+                                    aspectMode=Qt.AspectRatioMode.KeepAspectRatio)
+        self.scene.addPixmap(scaled)
+
+    def resizeEvent(self, event: QResizeEvent):
+        super().resizeEvent(event)
+        self.scale_image()
 
 
 def main():
