@@ -5,6 +5,7 @@ from PySide2.QtGui import QImageReader, QPixmap, QResizeEvent
 from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QFileDialog
 
 from sliced_art.main_window import Ui_MainWindow
+from sliced_art.selection_grid import SelectionGrid
 
 
 class MainWindow(QMainWindow):
@@ -41,6 +42,7 @@ class MainWindow(QMainWindow):
         scaled = self.pixmap.scaled(view_size,
                                     aspectMode=Qt.AspectRatioMode.KeepAspectRatio)
         self.scene.addPixmap(scaled)
+        self.scene.addItem(SelectionGrid(0, 0, 300, 150))
 
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)
