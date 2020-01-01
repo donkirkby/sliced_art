@@ -42,6 +42,8 @@ class SelectionGrid(QGraphicsRectItem):
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
+        self.row_count, self.column_count = 4, 6
+        self.on_moved = lambda: None
         self.update_handle_positions()
 
     def handle_at(self, point):
@@ -198,6 +200,7 @@ class SelectionGrid(QGraphicsRectItem):
             self.adjust_right(mouse_pos)
 
         self.update_handle_positions()
+        self.on_moved()
 
     def shape(self):
         """
@@ -215,7 +218,8 @@ class SelectionGrid(QGraphicsRectItem):
         Paint the node in the graphic view.
         """
         painter.setPen(QPen(QColor(128, 128, 128), 1.0, Qt.SolidLine))
-        painter.drawRect(self.rect())
+        for cell_rect in self.cell_rects():
+            painter.drawRect(cell_rect)
 
         if self.isSelected():
             painter.setRenderHint(QPainter.Antialiasing)
@@ -226,3 +230,14 @@ class SelectionGrid(QGraphicsRectItem):
             for handle, rect in self.handles.items():
                 if self.selected_handle is None or handle == self.selected_handle:
                     painter.drawEllipse(rect)
+
+    def cell_rects(self):
+        rect = self.rect()
+        cell_width = rect.width() / self.column_count
+        cell_height = rect.height() / self.row_count
+
+        for row in range(self.row_count):
+            y = rect.top() + rect.height() * row / self.row_count
+            for column in range(self.column_count):
+                x = rect.left() + rect.width() * column / self.column_count
+                yield QRectF(x, y, cell_width, cell_height)
