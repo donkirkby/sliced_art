@@ -157,6 +157,7 @@ class PixmapDiffer:
         return QColor(dr, dg, db, da)
 
 
+# noinspection DuplicatedCode
 def test_art_shuffler_square(pixmap_differ):
     art = QPixmap(1000, 1000)
     painter = QPainter(art)
@@ -188,11 +189,62 @@ def test_art_shuffler_not_square(pixmap_differ):
     painter.fillRect(500, 0, 500, 500, blue)
     painter.end()
 
-    actual, expected = pixmap_differ.start(200, 100, 'art_shuffler_rect')
+    actual, expected = pixmap_differ.start(200,
+                                           100,
+                                           'test_art_shuffler_not_square')
     expected.fillRect(5, 0, 90, 45, green)
     expected.fillRect(5, 55, 90, 45, green)
     expected.fillRect(105, 0, 90, 45, blue)
     expected.fillRect(105, 55, 90, 45, blue)
+
+    actual.end()
+    shuffler = ArtShuffler(2, 2, actual.device())
+    shuffler.draw(art)
+
+    pixmap_differ.assert_equal()
+
+
+# noinspection DuplicatedCode
+def test_art_shuffler_aspect(pixmap_differ):
+    art = QPixmap(1000, 1000)
+    painter = QPainter(art)
+    green = QColor('green')
+    blue = QColor('blue')
+    painter.fillRect(0, 0, 500, 1000, green)
+    painter.fillRect(500, 0, 500, 1000, blue)
+    painter.end()
+
+    actual, expected = pixmap_differ.start(200, 100, 'test_art_shuffler_aspect')
+    expected.fillRect(50, 0, 45, 45, green)
+    expected.fillRect(50, 55, 45, 45, green)
+    expected.fillRect(105, 0, 45, 45, blue)
+    expected.fillRect(105, 55, 45, 45, blue)
+
+    actual.end()
+    shuffler = ArtShuffler(2, 2, actual.device())
+    shuffler.draw(art)
+
+    pixmap_differ.assert_equal()
+
+
+# noinspection DuplicatedCode
+def test_art_shuffler_clears(pixmap_differ):
+    art = QPixmap(1000, 1000)
+    painter = QPainter(art)
+    green = QColor('green')
+    blue = QColor('blue')
+    painter.fillRect(0, 0, 500, 1000, green)
+    painter.fillRect(500, 0, 500, 1000, blue)
+    painter.end()
+
+    actual, expected = pixmap_differ.start(200, 200, 'test_art_shuffler_clears')
+    expected.fillRect(0, 0, 90, 90, green)
+    expected.fillRect(0, 110, 90, 90, green)
+    expected.fillRect(110, 0, 90, 90, blue)
+    expected.fillRect(110, 110, 90, 90, blue)
+
+    # Pollute the display with a previous version.
+    actual.fillRect(50, 50, 100, 100, blue)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())

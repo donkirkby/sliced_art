@@ -1,5 +1,5 @@
-from PySide2.QtCore import QRect
-from PySide2.QtGui import QPainter, QPaintDevice, QPixmap
+from PySide2.QtCore import QRect, Qt
+from PySide2.QtGui import QPainter, QPaintDevice, QPixmap, QColor
 
 
 class ArtShuffler:
@@ -23,14 +23,14 @@ class ArtShuffler:
     def draw(self, art: QPixmap):
         filled_portion = 0.9
         scaled_art = art.scaled(self.rect.width()*filled_portion,
-                                self.rect.height()*filled_portion)
+                                self.rect.height()*filled_portion,
+                                Qt.AspectRatioMode.KeepAspectRatio)
         painter = QPainter(self.target)
-        row_height = self.rect.height() / self.rows
-        cell_height = row_height * filled_portion
+        painter.fillRect(self.rect, QColor('white'))
+        cell_height = scaled_art.height() / self.rows
         vertical_padding = self.rect.height() - self.rows * cell_height
         row_padding = vertical_padding / (self.rows - 1)
-        col_width = self.rect.width() / self.cols
-        cell_width = col_width * filled_portion
+        cell_width = scaled_art.width() / self.cols
         horizontal_padding = self.rect.width() - self.cols * cell_width
         col_padding = horizontal_padding / (self.cols - 1)
         padding = min(row_padding, col_padding)
