@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
         self.selection_grid: typing.Optional[SelectionGrid] = None
         self.cells = []
         self.settings = QSettings()
-        self.art_shuffler = None
+        self.art_shuffler: typing.Optional[ArtShuffler] = None
 
     def shuffle(self):
         if self.art_shuffler is not None:
@@ -114,15 +114,17 @@ class MainWindow(QMainWindow):
         return x, y, width, height
 
     def on_selection_moved(self):
+        self.draw_selected(self.art_shuffler)
+        self.sliced_pixmap_item.setPixmap(QPixmap.fromImage(self.sliced_image))
+
+    def draw_selected(self, shuffler):
         x, y, width, height = self.get_selected_fraction()
         original_size = self.pixmap.size()
-        selected_pixmap = self.pixmap.copy(x*original_size.width(),
-                                           y*original_size.height(),
-                                           width*original_size.width(),
-                                           height*original_size.height())
-
-        self.art_shuffler.draw(selected_pixmap)
-        self.sliced_pixmap_item.setPixmap(QPixmap.fromImage(self.sliced_image))
+        selected_pixmap = self.pixmap.copy(x * original_size.width(),
+                                           y * original_size.height(),
+                                           width * original_size.width(),
+                                           height * original_size.height())
+        shuffler.draw(selected_pixmap)
 
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)
@@ -144,10 +146,16 @@ class MainWindow(QMainWindow):
         p.begin(writer)
         try:
             p.drawText(0, 0, 'Hello, World!')
-
-            print(p.viewport())
         finally:
             p.end()
+        print_shuffler = ArtShuffler(self.art_shuffler.rows,
+                                     self.art_shuffler.cols,
+                                     writer,
+                                     QRect(0, 0,
+                                           writer.width(), writer.height()/2))
+        print_shuffler.cells = self.art_shuffler.cells[:]
+        print_shuffler.is_shuffled = self.art_shuffler.is_shuffled
+        self.draw_selected(print_shuffler)
 
 
 def main():
