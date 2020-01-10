@@ -26,6 +26,8 @@ class MainWindow(QMainWindow):
         self.ui.actionExit.triggered.connect(self.close)
         self.ui.actionOpen.triggered.connect(self.open_image)
         self.ui.actionSave.triggered.connect(self.save_pdf)
+        self.ui.actionShuffle.triggered.connect(self.shuffle)
+        self.ui.actionSort.triggered.connect(self.sort)
 
         self.pixmap = self.scaled_pixmap = self.mini_pixmap = None
         self.sliced_pixmap_item: typing.Optional[QGraphicsPixmapItem] = None
@@ -34,6 +36,16 @@ class MainWindow(QMainWindow):
         self.cells = []
         self.settings = QSettings()
         self.art_shuffler = None
+
+    def shuffle(self):
+        if self.art_shuffler is not None:
+            self.art_shuffler.shuffle()
+            self.on_selection_moved()
+
+    def sort(self):
+        if self.art_shuffler is not None:
+            self.art_shuffler.sort()
+            self.on_selection_moved()
 
     def open_image(self):
         formats = QImageReader.supportedImageFormats()

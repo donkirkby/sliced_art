@@ -3,7 +3,7 @@ from pathlib import Path
 from turtle import Turtle
 
 import pytest
-from PySide2.QtCore import QByteArray, QBuffer, QIODevice, QTextCodec
+from PySide2.QtCore import QByteArray, QBuffer, QIODevice, QTextCodec, Qt
 from PySide2.QtGui import QPixmap, QPainter, QColor, QImage
 from PySide2.QtWidgets import QApplication
 
@@ -168,10 +168,10 @@ def test_art_shuffler_square(pixmap_differ):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'art_shuffler_square')
-    expected.fillRect(0, 0, 90, 90, green)
-    expected.fillRect(0, 110, 90, 90, green)
-    expected.fillRect(110, 0, 90, 90, blue)
-    expected.fillRect(110, 110, 90, 90, blue)
+    expected.fillRect(5, 5, 90, 90, green)
+    expected.fillRect(5, 105, 90, 90, green)
+    expected.fillRect(105, 5, 90, 90, blue)
+    expected.fillRect(105, 105, 90, 90, blue)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
@@ -192,10 +192,10 @@ def test_art_shuffler_not_square(pixmap_differ):
     actual, expected = pixmap_differ.start(200,
                                            100,
                                            'test_art_shuffler_not_square')
-    expected.fillRect(5, 0, 90, 45, green)
-    expected.fillRect(5, 55, 90, 45, green)
-    expected.fillRect(105, 0, 90, 45, blue)
-    expected.fillRect(105, 55, 90, 45, blue)
+    expected.fillRect(7, 2, 90, 45, green)
+    expected.fillRect(7, 52, 90, 45, green)
+    expected.fillRect(102, 2, 90, 45, blue)
+    expected.fillRect(102, 52, 90, 45, blue)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
@@ -215,10 +215,10 @@ def test_art_shuffler_aspect(pixmap_differ):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 100, 'test_art_shuffler_aspect')
-    expected.fillRect(50, 0, 45, 45, green)
-    expected.fillRect(50, 55, 45, 45, green)
-    expected.fillRect(105, 0, 45, 45, blue)
-    expected.fillRect(105, 55, 45, 45, blue)
+    expected.fillRect(52, 2, 45, 45, green)
+    expected.fillRect(52, 52, 45, 45, green)
+    expected.fillRect(102, 2, 45, 45, blue)
+    expected.fillRect(102, 52, 45, 45, blue)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
@@ -238,16 +238,80 @@ def test_art_shuffler_clears(pixmap_differ):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'test_art_shuffler_clears')
-    expected.fillRect(0, 0, 90, 90, green)
-    expected.fillRect(0, 110, 90, 90, green)
-    expected.fillRect(110, 0, 90, 90, blue)
-    expected.fillRect(110, 110, 90, 90, blue)
+    expected.fillRect(5, 5, 90, 90, green)
+    expected.fillRect(5, 105, 90, 90, green)
+    expected.fillRect(105, 5, 90, 90, blue)
+    expected.fillRect(105, 105, 90, 90, blue)
 
     # Pollute the display with a previous version.
     actual.fillRect(50, 50, 100, 100, blue)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
+    shuffler.draw(art)
+
+    pixmap_differ.assert_equal()
+
+
+# noinspection DuplicatedCode
+def test_art_shuffler_shuffle(pixmap_differ, monkeypatch):
+    monkeypatch.setattr('sliced_art.art_shuffler.shuffle',
+                        lambda a: a.reverse())
+
+    art = QPixmap(900, 900)
+    painter = QPainter(art)
+    green = QColor('green')
+    blue = QColor('blue')
+    painter.fillRect(0, 0, 450, 1000, green)
+    painter.fillRect(450, 0, 450, 1000, blue)
+    painter.fillRect(150, 150, 150, 150, blue)
+    painter.end()
+
+    actual, expected = pixmap_differ.start(200, 200, 'test_art_shuffler_shuffle')
+    expected.fillRect(15, 15, 70, 70, blue)
+    expected.fillRect(15, 115, 70, 70, blue)
+    expected.fillRect(115, 15, 70, 70, green)
+    expected.fillRect(115, 115, 70, 70, green)
+    expected.fillRect(138, 138, 24, 24, blue)
+
+    font = expected.font()
+    font.setPixelSize(14)
+    expected.setFont(font)
+    expected.drawText(0, 0, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'D')
+    expected.drawText(100, 0, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'C')
+    expected.drawText(0, 100, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'B')
+    expected.drawText(100, 100, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'A')
+
+    actual.end()
+    shuffler = ArtShuffler(2, 2, actual.device())
+
+    shuffler.shuffle()
+    shuffler.draw(art)
+
+    pixmap_differ.assert_equal()
+
+
+# noinspection DuplicatedCode
+def test_art_shuffler_sort(pixmap_differ):
+    art = QPixmap(1000, 1000)
+    painter = QPainter(art)
+    green = QColor('green')
+    blue = QColor('blue')
+    painter.fillRect(0, 0, 500, 1000, green)
+    painter.fillRect(500, 0, 500, 1000, blue)
+    painter.end()
+
+    actual, expected = pixmap_differ.start(200, 200, 'art_shuffler_sort')
+    expected.fillRect(5, 5, 90, 90, green)
+    expected.fillRect(5, 105, 90, 90, green)
+    expected.fillRect(105, 5, 90, 90, blue)
+    expected.fillRect(105, 105, 90, 90, blue)
+
+    actual.end()
+    shuffler = ArtShuffler(2, 2, actual.device())
+    shuffler.shuffle()
+    shuffler.sort()
+
     shuffler.draw(art)
 
     pixmap_differ.assert_equal()
