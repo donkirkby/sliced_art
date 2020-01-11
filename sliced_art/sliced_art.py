@@ -114,17 +114,17 @@ class MainWindow(QMainWindow):
         return x, y, width, height
 
     def on_selection_moved(self):
-        self.draw_selected(self.art_shuffler)
+        self.art_shuffler.draw(self.get_selected_pixmap())
         self.sliced_pixmap_item.setPixmap(QPixmap.fromImage(self.sliced_image))
 
-    def draw_selected(self, shuffler):
+    def get_selected_pixmap(self) -> QPixmap:
         x, y, width, height = self.get_selected_fraction()
         original_size = self.pixmap.size()
         selected_pixmap = self.pixmap.copy(x * original_size.width(),
                                            y * original_size.height(),
                                            width * original_size.width(),
                                            height * original_size.height())
-        shuffler.draw(selected_pixmap)
+        return selected_pixmap
 
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)
@@ -142,20 +142,22 @@ class MainWindow(QMainWindow):
             return
         self.settings.setValue('pdf_folder', os.path.dirname(file_name))
         writer = QPdfWriter(file_name)
-        p = QPainter()
-        p.begin(writer)
+        painter = QPainter(writer)
         try:
-            p.drawText(0, 0, 'Hello, World!')
+            print_shuffler = ArtShuffler(self.art_shuffler.rows,
+                                         self.art_shuffler.cols,
+                                         writer,
+                                         QRect(0, 0,
+                                               writer.width(), writer.height()/2))
+            print_shuffler.cells = self.art_shuffler.cells[:]
+            print_shuffler.is_shuffled = self.art_shuffler.is_shuffled
+            selected_pixmap = self.get_selected_pixmap()
+            print_shuffler.draw(selected_pixmap, painter)
+
+            print_shuffler.rect.moveTop(writer.height()/2)
+            print_shuffler.draw_grid(selected_pixmap, painter)
         finally:
-            p.end()
-        print_shuffler = ArtShuffler(self.art_shuffler.rows,
-                                     self.art_shuffler.cols,
-                                     writer,
-                                     QRect(0, 0,
-                                           writer.width(), writer.height()/2))
-        print_shuffler.cells = self.art_shuffler.cells[:]
-        print_shuffler.is_shuffled = self.art_shuffler.is_shuffled
-        self.draw_selected(print_shuffler)
+            painter.end()
 
 
 def main():
