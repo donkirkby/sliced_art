@@ -159,7 +159,7 @@ class PixmapDiffer:
 
 def outline_rect(painter, x, y, width, height, colour):
     old_pen = painter.pen()
-    grey_pen = QPen(QColor('grey'))
+    grey_pen = QPen(QColor('lightgrey'))
     grey_pen.setWidth(2)
     painter.setPen(grey_pen)
     painter.drawRect(x, y, width, height)
@@ -332,7 +332,7 @@ def test_art_shuffler_grid(pixmap_differ):
     art = QPixmap(1000, 1000)  # Only shape matters.
 
     actual, expected = pixmap_differ.start(200, 200, 'art_shuffler_grid')
-    grey_pen = QPen(QColor('grey'))
+    grey_pen = QPen(QColor('lightgrey'))
     expected.setPen(grey_pen)
 
     expected.drawRect(10, 10, 180, 180)

@@ -40,7 +40,7 @@ class ArtShuffler:
         if painter is None:
             painter = QPainter(self.target)
         painter.fillRect(self.rect, QColor('white'))
-        pen = QPen(QColor('grey'))
+        pen = QPen(QColor('lightgrey'))
         painter.setPen(pen)
         painter.drawRect(left_border,
                          top_border,
@@ -74,8 +74,9 @@ class ArtShuffler:
         font.setPixelSize(padding/2.6)
         painter.setFont(font)
         old_pen = painter.pen()
-        grey_pen = QPen(QColor('grey'))
-        grey_pen.setWidth(2)
+        grey_pen = QPen(QColor('lightgrey'))
+        width = max(cell_width/35, 2)
+        grey_pen.setWidth(width)
         y = top_border
         cell_index = 0
         for i in range(self.rows):

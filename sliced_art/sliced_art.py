@@ -142,6 +142,7 @@ class MainWindow(QMainWindow):
             return
         self.settings.setValue('pdf_folder', os.path.dirname(file_name))
         writer = QPdfWriter(file_name)
+        writer.setPageSize(QPdfWriter.Letter)
         painter = QPainter(writer)
         try:
             print_shuffler = ArtShuffler(self.art_shuffler.rows,
