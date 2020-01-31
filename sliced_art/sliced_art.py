@@ -4,7 +4,8 @@ import typing
 
 from PySide2.QtCore import Qt, QSize, QSettings, QCoreApplication, QRect
 from PySide2.QtGui import QImageReader, QPixmap, QResizeEvent, QPdfWriter, QPainter, QImage
-from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QFileDialog, QGraphicsPixmapItem
+from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, \
+    QFileDialog, QGraphicsPixmapItem, QLabel, QGridLayout, QLineEdit
 
 from sliced_art.art_shuffler import ArtShuffler
 from sliced_art.main_window import Ui_MainWindow
@@ -28,6 +29,11 @@ class MainWindow(QMainWindow):
         self.ui.actionSave.triggered.connect(self.save_pdf)
         self.ui.actionShuffle.triggered.connect(self.shuffle)
         self.ui.actionSort.triggered.connect(self.sort)
+
+        self.word_layout = QGridLayout(self.ui.word_content)
+        self.ui.word_scroll.setWidgetResizable(True)
+        self.word_fields: typing.List[QLineEdit] = []
+        self.word_labels: typing.List[QLabel] = []
 
         self.pixmap = self.scaled_pixmap = self.mini_pixmap = None
         self.sliced_pixmap_item: typing.Optional[QGraphicsPixmapItem] = None
@@ -101,6 +107,15 @@ class MainWindow(QMainWindow):
         self.sliced_pixmap_item = self.scene.addPixmap(
             QPixmap.fromImage(self.sliced_image))
         self.sliced_pixmap_item.setPos(display_size.width(), 0)
+        word_count = (self.selection_grid.row_count *
+                      self.selection_grid.column_count)
+        for i in range(word_count):
+            word_field = QLineEdit()
+            self.word_layout.addWidget(word_field, i, 0)
+            self.word_fields.append(word_field)
+            letter = chr(65+i)
+            word_label = QLabel(f'{letter} word')
+            self.word_layout.addWidget(word_label, i, 1)
         self.on_selection_moved()
 
     def get_selected_fraction(self):
