@@ -28,7 +28,7 @@ class SelectionGrid(QGraphicsRectItem):
         HANDLE_BOTTOM_RIGHT: Qt.SizeFDiagCursor,
     }
 
-    def __init__(self, *args):
+    def __init__(self, *args, row_count=4, column_count=6):
         """
         Initialize the shape.
         """
@@ -42,7 +42,7 @@ class SelectionGrid(QGraphicsRectItem):
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
-        self.row_count, self.column_count = 4, 6
+        self.row_count, self.column_count = row_count, column_count
         self.on_moved = lambda: None
         self.update_handle_positions()
 
