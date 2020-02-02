@@ -10,13 +10,15 @@ class ArtShuffler:
                  rows: int,
                  cols: int,
                  target: QPaintDevice,
-                 rect: QRect = None):
+                 rect: QRect = None,
+                 clues: typing.Optional[typing.Dict[str, str]] = None):
         """ Initialize the object.
 
         :param rows: the number of rows to break the art into
         :param cols: the number of columns to break the art into
         :param target: what to paint the pieces on
         :param rect: where to paint the pieces, or None to use the full target
+        :param clues: word clues to display, defaults to just the letters
         """
         self.rows = rows
         self.cols = cols
@@ -27,6 +29,7 @@ class ArtShuffler:
                                                  for i in range(rows)
                                                  for j in range(cols))]
         self.is_shuffled = False
+        self.clues = clues or {}
 
     def draw_grid(self, art: QPixmap, painter: typing.Optional[QPainter] = None):
         filled_portion = 0.9
@@ -83,12 +86,27 @@ class ArtShuffler:
             x = left_border
             for j in range(self.cols):
                 si, sj, label = self.cells[cell_index]
+                clue = self.clues.get(label.lower(), label)
                 sx = sj * cell_width
                 sy = si * cell_height
                 if self.is_shuffled:
+                    original_size = new_size = font.pixelSize()
+                    while True:
+                        # noinspection PyTypeChecker
+                        rect = painter.boundingRect(0, 0,
+                                                    cell_width, padding/2,
+                                                    Qt.AlignmentFlag.AlignLeft,
+                                                    clue)
+                        if rect.width() <= cell_width:
+                            break
+                        new_size *= 0.9
+                        font.setPixelSize(new_size)
+                        painter.setFont(font)
                     painter.drawText(x+padding/2, y,
                                      cell_width, padding/2,
-                                     Qt.AlignmentFlag.AlignHCenter, label)
+                                     Qt.AlignmentFlag.AlignHCenter, clue)
+                    font.setPixelSize(original_size)
+                    painter.setFont(font)
                 painter.setPen(grey_pen)
                 painter.drawRect(x+padding/2, y+padding/2,
                                  cell_width, cell_height)

@@ -109,8 +109,10 @@ class PixmapDiffer:
         return self.actual, self.expected
 
     def end(self):
-        self.actual.end()
-        self.expected.end()
+        if self.actual.isActive():
+            self.actual.end()
+        if self.expected.isActive():
+            self.expected.end()
 
     def assert_equal(self):
         __tracebackhide__ = True
@@ -294,6 +296,52 @@ def test_art_shuffler_shuffle(pixmap_differ, monkeypatch):
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
+
+    shuffler.shuffle()
+    shuffler.draw(art)
+
+    pixmap_differ.assert_equal()
+
+
+# noinspection DuplicatedCode
+def test_art_shuffler_shuffle_clues(pixmap_differ, monkeypatch):
+    monkeypatch.setattr('sliced_art.art_shuffler.shuffle',
+                        lambda a: a.reverse())
+
+    art = QPixmap(900, 900)
+    painter = QPainter(art)
+    green = QColor('green')
+    blue = QColor('blue')
+    painter.fillRect(0, 0, 450, 1000, green)
+    painter.fillRect(450, 0, 450, 1000, blue)
+    painter.fillRect(150, 150, 150, 150, blue)
+    painter.end()
+
+    actual, expected = pixmap_differ.start(200, 200, 'test_art_shuffler_shuffle_clues')
+    outline_rect(expected, 15, 15, 70, 70, blue)
+    outline_rect(expected, 15, 115, 70, 70, blue)
+    outline_rect(expected, 115, 15, 70, 70, green)
+    outline_rect(expected, 115, 115, 70, 70, green)
+    expected.fillRect(138, 138, 24, 24, blue)
+
+    font = expected.font()
+    font.setPixelSize(11)
+    expected.setFont(font)
+    expected.drawText(0, 0, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'ELTA')
+    expected.drawText(0, 100, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'ETA')
+    expected.drawText(100, 100, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'LPHA')
+    font.setPixelSize(8)
+    expected.setFont(font)
+    expected.drawText(100,
+                      0,
+                      100,
+                      15,
+                      Qt.AlignmentFlag.AlignHCenter,
+                      'ONSTANTINOPLE')
+
+    actual.end()
+    clues = dict(a='LPHA', b='ETA', c='ONSTANTINOPLE', d='ELTA')
+    shuffler = ArtShuffler(2, 2, actual.device(), clues=clues)
 
     shuffler.shuffle()
     shuffler.draw(art)

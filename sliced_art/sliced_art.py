@@ -4,7 +4,7 @@ import typing
 from functools import partial
 from pathlib import Path
 
-from PySide2.QtCore import Qt, QSize, QSettings, QCoreApplication, QRect
+from PySide2.QtCore import Qt, QSize, QSettings, QCoreApplication, QRect, QTimer
 from PySide2.QtGui import QImageReader, QPixmap, QResizeEvent, QPdfWriter, QPainter, QImage
 from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, \
     QFileDialog, QGraphicsPixmapItem, QLabel, QGridLayout, QLineEdit
@@ -39,8 +39,8 @@ class MainWindow(QMainWindow):
         self.word_labels: typing.Dict[str, QLabel] = {}
         self.word_shuffler = WordShuffler([])
 
-        self.row_count = 4
-        self.column_count = 6
+        self.row_count = 6
+        self.column_count = 4
         word_count = (self.row_count * self.column_count)
         while self.word_layout.count():
             layout_item = self.word_layout.takeAt(0)
@@ -60,6 +60,7 @@ class MainWindow(QMainWindow):
             self.word_layout.addWidget(word_label, i, 1)
             self.word_labels[letter] = word_label
             word_fields[letter] = word_field
+        self.clues = None
 
         self.pixmap = self.scaled_pixmap = self.mini_pixmap = None
         self.sliced_pixmap_item: typing.Optional[QGraphicsPixmapItem] = None
@@ -75,13 +76,30 @@ class MainWindow(QMainWindow):
         if self.words_path is not None:
             self.load_words(self.words_path)
 
+        self.dirty_letters = set()
         for i in range(word_count):
             letter = chr(65+i)
             word = self.settings.value(f'word_{letter}', '')
-            self.on_word_edited(letter, word)
+            self.word_shuffler[letter] = word
+            self.dirty_letters.add(letter)
             word_fields[letter].setText(word)
+        self.timer = QTimer()
+        self.timer.setInterval(500)
+        self.timer.setSingleShot(True)
+        # noinspection PyUnresolvedReferences
+        self.timer.timeout.connect(self.on_dirty)
+        self.timer.start()
+
+    def on_dirty(self):
+        for letter in self.dirty_letters:
+            self.word_labels[letter].setText(
+                self.word_shuffler.make_display(letter))
+            self.settings.setValue(f'word_{letter}', self.word_shuffler[letter])
+        self.clues = None
+        self.dirty_letters.clear()
 
     def shuffle(self):
+        self.clues = self.word_shuffler.make_clues()
         if self.art_shuffler is not None:
             self.art_shuffler.shuffle()
             self.on_selection_moved()
@@ -169,22 +187,24 @@ class MainWindow(QMainWindow):
         self.scene.addItem(self.selection_grid)
         self.sliced_image = QImage(display_size,
                                    QImage.Format.Format_ARGB32_Premultiplied)
+        self.check_clues()
         self.art_shuffler = ArtShuffler(self.selection_grid.row_count,
                                         self.selection_grid.column_count,
                                         self.sliced_image,
                                         QRect(0,
                                               0,
                                               display_size.width(),
-                                              display_size.height()))
+                                              display_size.height()),
+                                        clues=self.clues)
         self.sliced_pixmap_item = self.scene.addPixmap(
             QPixmap.fromImage(self.sliced_image))
         self.sliced_pixmap_item.setPos(display_size.width(), 0)
         self.on_selection_moved()
 
     def on_word_edited(self, letter, word):
-        self.word_labels[letter].setText(self.word_shuffler.display(word,
-                                                                    letter))
-        self.settings.setValue(f'word_{letter}', word)
+        self.word_shuffler[letter] = word
+        self.dirty_letters.add(letter)
+        self.timer.start()
 
     def get_selected_fraction(self):
         selection_rect = self.selection_grid.rect()
@@ -224,6 +244,7 @@ class MainWindow(QMainWindow):
         if not file_name:
             return
         self.settings.setValue('pdf_folder', os.path.dirname(file_name))
+        self.check_clues()
         writer = QPdfWriter(file_name)
         writer.setPageSize(QPdfWriter.Letter)
         painter = QPainter(writer)
@@ -232,7 +253,8 @@ class MainWindow(QMainWindow):
                                          self.art_shuffler.cols,
                                          writer,
                                          QRect(0, 0,
-                                               writer.width(), writer.height()/2))
+                                               writer.width(), writer.height()/2),
+                                         clues=self.clues)
             print_shuffler.cells = self.art_shuffler.cells[:]
             print_shuffler.is_shuffled = self.art_shuffler.is_shuffled
             selected_pixmap = self.get_selected_pixmap()
@@ -242,6 +264,10 @@ class MainWindow(QMainWindow):
             print_shuffler.draw_grid(selected_pixmap, painter)
         finally:
             painter.end()
+
+    def check_clues(self):
+        if self.clues is None:
+            self.clues = self.word_shuffler.make_clues()
 
 
 def main():

@@ -13,15 +13,36 @@ def clean_word(word: str):
 
 
 class WordShuffler:
-    def __init__(self, all_words: typing.Iterable[str]):
-        cleaned_words = (clean_word(word) for word in all_words)
+    def __init__(self,
+                 all_words: typing.Optional[typing.Iterable[str]] = None,
+                 min_words: int = 0):
+        self.min_words = min_words
+        if all_words is None:
+            cleaned_words = []
+        else:
+            cleaned_words = (clean_word(word) for word in all_words)
         self.all_letter_counts = {word: Counter(word)
                                   for word in cleaned_words}
+        self.words = {}
 
-    def find_other_words(self, target_word, target_letter):
-        target_word = clean_word(target_word)
-        target_letter_counts = Counter(self.all_letter_counts[target_word])
-        target_letter_counts[target_letter.lower()] -= 1
+    def __setitem__(self, letter: str, word: str):
+        self.words[letter.lower()] = clean_word(word)
+
+    def __getitem__(self, letter: str):
+        return self.words.get(letter.lower(), '')
+
+    def make_display(self, target_letter: str):
+        target_letter = target_letter.lower()
+        target_word = self[target_letter]
+        if not target_word or target_letter not in target_word:
+            return f'{target_letter.upper()} word needed.'
+        display_parts = [highlight_letter(target_word, target_letter)]
+        try:
+            target_letter_counts = Counter(self.all_letter_counts[target_word])
+        except KeyError:
+            target_letter_counts = Counter(target_word)
+            display_parts[0] += ' (unknown word)'
+        target_letter_counts[target_letter] -= 1
         matches = []
         for word, letter_counts in self.all_letter_counts.items():
             if word == target_word:
@@ -35,28 +56,26 @@ class WordShuffler:
                                 for c, count in counts_diff.items()
                                 if count == 1][0]
                 matches.append(highlight_letter(word, extra_letter))
-        return matches
-
-    def display(self, target_word: str, target_letter: str):
-        target_word = clean_word(target_word)
-        target_letter = target_letter.lower()
-        if not target_word or target_letter not in target_word:
-            return f'{target_letter.upper()} word needed.'
-        display_parts = [highlight_letter(target_word, target_letter)]
-        try:
-            other_words = self.find_other_words(target_word, target_letter)
-        except KeyError:
-            return 'Unknown word!'
+        other_words = matches
         if other_words:
             display_parts.append(', '.join(other_words))
         return ' - '.join(display_parts)
 
-    @staticmethod
-    def make_clue(target_word: str, target_letter: str):
-        target_word = clean_word(target_word).upper()
-        target_letter = target_letter.upper()
+    def make_clue(self, target_letter: str):
+        target_letter = target_letter.lower()
+        default_clue = target_letter.upper()
+        if len(self.words) < self.min_words:
+            return default_clue
+        for other_letter, word in self.words.items():
+            if other_letter not in word:
+                return default_clue
+        target_word = self[target_letter].upper()
+        target_letter = default_clue
         clue_letters = list(target_word.replace(target_letter, '', 1))
         if len(clue_letters) == len(target_word):
-            raise ValueError(f'No {target_letter} in {target_word}.')
+            return target_letter
         shuffle(clue_letters)
         return ''.join(clue_letters)
+
+    def make_clues(self):
+        return {letter: self.make_clue(letter) for letter in self.words}
