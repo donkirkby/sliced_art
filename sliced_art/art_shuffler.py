@@ -94,25 +94,25 @@ class ArtShuffler:
                     while True:
                         # noinspection PyTypeChecker
                         rect = painter.boundingRect(0, 0,
-                                                    cell_width, padding/2,
+                                                    cell_width, padding,
                                                     Qt.AlignmentFlag.AlignLeft,
                                                     clue)
                         if (rect.width() <= cell_width and
-                                rect.height() <= padding/2):
+                                rect.height() <= padding):
                             break
                         new_size *= 0.9
                         font.setPixelSize(new_size)
                         painter.setFont(font)
-                    painter.drawText(x+padding/2, y,
-                                     cell_width, padding/2,
+                    painter.drawText(x+padding/2, y+cell_height,
+                                     cell_width, padding,
                                      Qt.AlignmentFlag.AlignHCenter, clue)
                     font.setPixelSize(original_size)
                     painter.setFont(font)
                 painter.setPen(grey_pen)
-                painter.drawRect(x+padding/2, y+padding/2,
+                painter.drawRect(x+padding/2, y,
                                  cell_width, cell_height)
                 painter.setPen(old_pen)
-                painter.drawPixmap(x+padding/2, y+padding/2,
+                painter.drawPixmap(x+padding/2, y,
                                    cell_width, cell_height,
                                    scaled_art,
                                    sx, sy,

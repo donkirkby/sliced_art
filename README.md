@@ -14,9 +14,4 @@ a PDF, and then print out the PDF. Challenge your friends to solve the puzzle!
 Each square gets a clue. Add one letter and unscramble the word. The added
 letter tells you which position to draw the square in.
 
-## Ideas
-Right now, the word puzzle is too hard, particularly with words longer than six
-letters. Maybe try something more like a standard anagram with one position
-highlighted to show which position each square goes in.
-
 [vograbulary]: https://github.com/donkirkby/vograbulary/blob/master/core/assets/wordlist.txt

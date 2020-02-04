@@ -180,10 +180,10 @@ def test_art_shuffler_square(pixmap_differ):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'art_shuffler_square')
-    outline_rect(expected, 5, 5, 90, 90, green)
-    outline_rect(expected, 5, 105, 90, 90, green)
-    outline_rect(expected, 105, 5, 90, 90, blue)
-    outline_rect(expected, 105, 105, 90, 90, blue)
+    outline_rect(expected, 5, 0, 90, 90, green)
+    outline_rect(expected, 5, 100, 90, 90, green)
+    outline_rect(expected, 105, 0, 90, 90, blue)
+    outline_rect(expected, 105, 100, 90, 90, blue)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
@@ -204,10 +204,10 @@ def test_art_shuffler_not_square(pixmap_differ):
     actual, expected = pixmap_differ.start(200,
                                            100,
                                            'test_art_shuffler_not_square')
-    outline_rect(expected, 7, 2, 90, 45, green)
-    outline_rect(expected, 7, 52, 90, 45, green)
-    outline_rect(expected, 102, 2, 90, 45, blue)
-    outline_rect(expected, 102, 52, 90, 45, blue)
+    outline_rect(expected, 7, 0, 90, 45, green)
+    outline_rect(expected, 7, 50, 90, 45, green)
+    outline_rect(expected, 102, 0, 90, 45, blue)
+    outline_rect(expected, 102, 50, 90, 45, blue)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
@@ -227,10 +227,10 @@ def test_art_shuffler_aspect(pixmap_differ):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 100, 'test_art_shuffler_aspect')
-    outline_rect(expected, 52, 2, 45, 45, green)
-    outline_rect(expected, 52, 52, 45, 45, green)
-    outline_rect(expected, 102, 2, 45, 45, blue)
-    outline_rect(expected, 102, 52, 45, 45, blue)
+    outline_rect(expected, 52, 0, 45, 45, green)
+    outline_rect(expected, 52, 50, 45, 45, green)
+    outline_rect(expected, 102, 0, 45, 45, blue)
+    outline_rect(expected, 102, 50, 45, 45, blue)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
@@ -250,10 +250,10 @@ def test_art_shuffler_clears(pixmap_differ):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'test_art_shuffler_clears')
-    outline_rect(expected, 5, 5, 90, 90, green)
-    outline_rect(expected, 5, 105, 90, 90, green)
-    outline_rect(expected, 105, 5, 90, 90, blue)
-    outline_rect(expected, 105, 105, 90, 90, blue)
+    outline_rect(expected, 5, 0, 90, 90, green)
+    outline_rect(expected, 5, 100, 90, 90, green)
+    outline_rect(expected, 105, 0, 90, 90, blue)
+    outline_rect(expected, 105, 100, 90, 90, blue)
 
     # Pollute the display with a previous version.
     actual.fillRect(50, 50, 100, 100, blue)
@@ -280,19 +280,19 @@ def test_art_shuffler_shuffle(pixmap_differ, monkeypatch):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'test_art_shuffler_shuffle')
-    outline_rect(expected, 15, 15, 70, 70, blue)
-    outline_rect(expected, 15, 115, 70, 70, blue)
-    outline_rect(expected, 115, 15, 70, 70, green)
-    outline_rect(expected, 115, 115, 70, 70, green)
-    expected.fillRect(138, 138, 24, 24, blue)
+    outline_rect(expected, 15, 0, 70, 70, blue)
+    outline_rect(expected, 15, 100, 70, 70, blue)
+    outline_rect(expected, 115, 0, 70, 70, green)
+    outline_rect(expected, 115, 100, 70, 70, green)
+    expected.fillRect(138, 123, 24, 24, blue)
 
     font = expected.font()
     font.setPixelSize(11)
     expected.setFont(font)
-    expected.drawText(0, 0, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'D')
-    expected.drawText(100, 0, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'C')
-    expected.drawText(0, 100, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'B')
-    expected.drawText(100, 100, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'A')
+    expected.drawText(0, 70, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'D')
+    expected.drawText(100, 70, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'C')
+    expected.drawText(0, 170, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'B')
+    expected.drawText(100, 170, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'A')
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
@@ -318,29 +318,29 @@ def test_art_shuffler_shuffle_clues(pixmap_differ, monkeypatch):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'test_art_shuffler_shuffle_clues')
-    outline_rect(expected, 15, 15, 70, 70, blue)
-    outline_rect(expected, 15, 115, 70, 70, blue)
-    outline_rect(expected, 115, 15, 70, 70, green)
-    outline_rect(expected, 115, 115, 70, 70, green)
-    expected.fillRect(138, 138, 24, 24, blue)
+    outline_rect(expected, 15, 0, 70, 70, blue)
+    outline_rect(expected, 15, 100, 70, 70, blue)
+    outline_rect(expected, 115, 0, 70, 70, green)
+    outline_rect(expected, 115, 100, 70, 70, green)
+    expected.fillRect(138, 123, 24, 24, blue)
 
     font = expected.font()
-    font.setPixelSize(6)
+    font.setPixelSize(11)
     expected.setFont(font)
-    expected.drawText(0, 0,
-                      100, 15,
+    expected.drawText(0, 70,
+                      100, 30,
                       Qt.AlignmentFlag.AlignHCenter,
                       '[_]_ _ _ _\nDELTA')
-    expected.drawText(100, 0,
-                      100, 15,
+    expected.drawText(100, 70,
+                      100, 30,
                       Qt.AlignmentFlag.AlignHCenter,
                       '[_]_ _ _ _ _ _\nCHARLIE')
-    expected.drawText(0, 100,
-                      100, 15,
+    expected.drawText(0, 170,
+                      100, 30,
                       Qt.AlignmentFlag.AlignHCenter,
                       '[_]_ _ _\nBETA')
-    expected.drawText(100, 100,
-                      100, 15,
+    expected.drawText(100, 170,
+                      100, 30,
                       Qt.AlignmentFlag.AlignHCenter,
                       '[_]_ _ _ _\nALPHA')
 
@@ -368,10 +368,10 @@ def test_art_shuffler_sort(pixmap_differ):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'art_shuffler_sort')
-    outline_rect(expected, 5, 5, 90, 90, green)
-    outline_rect(expected, 5, 105, 90, 90, green)
-    outline_rect(expected, 105, 5, 90, 90, blue)
-    outline_rect(expected, 105, 105, 90, 90, blue)
+    outline_rect(expected, 5, 0, 90, 90, green)
+    outline_rect(expected, 5, 100, 90, 90, green)
+    outline_rect(expected, 105, 0, 90, 90, blue)
+    outline_rect(expected, 105, 100, 90, 90, blue)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
