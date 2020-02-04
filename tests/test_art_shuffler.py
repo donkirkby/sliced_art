@@ -325,22 +325,30 @@ def test_art_shuffler_shuffle_clues(pixmap_differ, monkeypatch):
     expected.fillRect(138, 138, 24, 24, blue)
 
     font = expected.font()
-    font.setPixelSize(11)
+    font.setPixelSize(6)
     expected.setFont(font)
-    expected.drawText(0, 0, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'ELTA')
-    expected.drawText(0, 100, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'ETA')
-    expected.drawText(100, 100, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'LPHA')
-    font.setPixelSize(8)
-    expected.setFont(font)
-    expected.drawText(100,
-                      0,
-                      100,
-                      15,
+    expected.drawText(0, 0,
+                      100, 15,
                       Qt.AlignmentFlag.AlignHCenter,
-                      'ONSTANTINOPLE')
+                      '[_]_ _ _ _\nDELTA')
+    expected.drawText(100, 0,
+                      100, 15,
+                      Qt.AlignmentFlag.AlignHCenter,
+                      '[_]_ _ _ _ _ _\nCHARLIE')
+    expected.drawText(0, 100,
+                      100, 15,
+                      Qt.AlignmentFlag.AlignHCenter,
+                      '[_]_ _ _\nBETA')
+    expected.drawText(100, 100,
+                      100, 15,
+                      Qt.AlignmentFlag.AlignHCenter,
+                      '[_]_ _ _ _\nALPHA')
 
     actual.end()
-    clues = dict(a='LPHA', b='ETA', c='ONSTANTINOPLE', d='ELTA')
+    clues = dict(a='[_]_ _ _ _\nALPHA',
+                 b='[_]_ _ _\nBETA',
+                 c='[_]_ _ _ _ _ _\nCHARLIE',
+                 d='[_]_ _ _ _\nDELTA')
     shuffler = ArtShuffler(2, 2, actual.device(), clues=clues)
 
     shuffler.shuffle()

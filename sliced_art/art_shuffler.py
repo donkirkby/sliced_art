@@ -97,7 +97,8 @@ class ArtShuffler:
                                                     cell_width, padding/2,
                                                     Qt.AlignmentFlag.AlignLeft,
                                                     clue)
-                        if rect.width() <= cell_width:
+                        if (rect.width() <= cell_width and
+                                rect.height() <= padding/2):
                             break
                         new_size *= 0.9
                         font.setPixelSize(new_size)

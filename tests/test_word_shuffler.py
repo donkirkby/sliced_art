@@ -20,7 +20,7 @@ def test_setitem():
     assert word2 == word1
 
 
-def test():
+def test_set_item_mixed_case():
     word_shuffler = WordShuffler()
 
     word1 = 'bag'
@@ -32,12 +32,12 @@ def test():
 
 
 def test_display():
-    all_words = 'the big bag of gob words'.split()
+    all_words = 'lots of words rail the liar from his lair with lira'.split()
     word_shuffler = WordShuffler(all_words)
 
     target_letter = 'a'
-    word_shuffler[target_letter] = 'bag'
-    expected_display = 'bAg - bIg, gOb'
+    word_shuffler[target_letter] = 'liar'
+    expected_display = 'liAr - raIl, laIr, liRa'
 
     display = word_shuffler.make_display(target_letter)
 
@@ -83,16 +83,16 @@ def test_display_mixed_case():
 def test_find_other_words_new_lines():
     all_words = StringIO('''\
 the
-BIG
+gab
 bag
 of
 words
 ''')
     word_shuffler = WordShuffler(all_words)
 
-    target_letter = 'A'
+    target_letter = 'G'
     word_shuffler[target_letter] = 'Bag'
-    expected_display = 'bAg - bIg'
+    expected_display = 'baG - gaB'
 
     display = word_shuffler.make_display(target_letter)
 
@@ -100,12 +100,12 @@ words
 
 
 def test_display_unknown_words():
-    all_words = 'THE big bag of words'.split()
+    all_words = 'THE gob bag of words'.split()
     word_shuffler = WordShuffler(all_words)
 
     target_letter = 'o'
     word_shuffler[target_letter] = 'bog'
-    expected_display = 'bOg (unknown word) - bIg, bAg'
+    expected_display = 'bOg (unknown word) - gOb'
 
     display = word_shuffler.make_display(target_letter)
 
@@ -113,12 +113,25 @@ def test_display_unknown_words():
 
 
 def test_display_repeated_letter():
-    all_words = 'the big book of words'.split()
+    all_words = 'respect the sceptre of a spectre'.split()
     word_shuffler = WordShuffler(all_words)
 
-    target_letter = 'o'
-    word_shuffler[target_letter] = 'book'
-    expected_display = 'bOok'
+    target_letter = 'e'
+    word_shuffler[target_letter] = 'respect'
+    expected_display = 'rEspect - sCeptre, sPectre'
+
+    display = word_shuffler.make_display(target_letter)
+
+    assert display == expected_display
+
+
+def test_display_repeated_letter_chosen():
+    all_words = 'respect the sceptre of a spectre'.split()
+    word_shuffler = WordShuffler(all_words)
+
+    target_letter = 'e'
+    word_shuffler[target_letter] = 'respEct'
+    expected_display = 'respEct - scepTre, specTre'
 
     display = word_shuffler.make_display(target_letter)
 
@@ -131,7 +144,7 @@ def test_display_with_space():
 
     target_letter = 'w'
     word_shuffler[target_letter] = 'to wards'
-    expected_display = 'toWards - roastEd'
+    expected_display = 'toWards'
 
     display = word_shuffler.make_display(target_letter)
 
@@ -157,7 +170,7 @@ def test_make_clue(monkeypatch):
     target_letter = 'w'
     word_shuffler[target_letter] = 'towards'
 
-    expected_clue = 'SDRAOT'
+    expected_clue = '_ _[_]_ _ _ _\nSDRAWOT'
 
     clue = word_shuffler.make_clue(target_letter)
 
@@ -198,26 +211,13 @@ def test_make_clue_missing_word():
     assert clue == expected_clue
 
 
-def test_make_clue_duplicate_letter(monkeypatch):
-    monkeypatch.setattr(sliced_art.word_shuffler, 'shuffle', mock_shuffle)
-    word_shuffler = WordShuffler([])
-    target_letter = 'o'
-    word_shuffler[target_letter] = 'book'
-
-    expected_clue = 'KOB'
-
-    clue = word_shuffler.make_clue(target_letter)
-
-    assert clue == expected_clue
-
-
 def test_make_clues(monkeypatch):
     monkeypatch.setattr(sliced_art.word_shuffler, 'shuffle', mock_shuffle)
     word_shuffler = WordShuffler([])
     word_shuffler['a'] = 'black'
     word_shuffler['o'] = 'book'
 
-    expected_clues = dict(a='KCLB', o='KOB')
+    expected_clues = dict(a='_ _[_]_ _\nKCALB', o='_[_]_ _\nKOOB')
 
     clues = word_shuffler.make_clues()
 

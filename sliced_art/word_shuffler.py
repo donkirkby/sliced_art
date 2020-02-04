@@ -1,15 +1,22 @@
 import re
 import typing
-from collections import Counter
+from collections import defaultdict
 from random import shuffle
 
 
-def highlight_letter(word: str, letter: str):
-    return word.replace(letter, letter.upper(), 1)
+def highlight_position(word: str, position: int):
+    return word[:position] + word[position].upper() + word[position+1:]
 
 
-def clean_word(word: str):
-    return re.sub(r'\s', '', word).lower()
+def anagram_root(word: str):
+    return ''.join(sorted(word))
+
+
+def clean_word(word: str, force_lower: bool = True):
+    stripped = re.sub(r'\s', '', word)
+    if force_lower:
+        stripped = stripped.lower()
+    return stripped
 
 
 class WordShuffler:
@@ -17,16 +24,25 @@ class WordShuffler:
                  all_words: typing.Optional[typing.Iterable[str]] = None,
                  min_words: int = 0):
         self.min_words = min_words
-        if all_words is None:
-            cleaned_words = []
-        else:
-            cleaned_words = (clean_word(word) for word in all_words)
-        self.all_letter_counts = {word: Counter(word)
-                                  for word in cleaned_words}
+        self.anagrams = defaultdict(list)
+        if all_words is not None:
+            for word in all_words:
+                cleaned_word = clean_word(word)
+                root = anagram_root(cleaned_word)
+                root_anagrams = self.anagrams[root]
+                root_anagrams.append(cleaned_word)
         self.words = {}
+        self.targets = {}
 
     def __setitem__(self, letter: str, word: str):
-        self.words[letter.lower()] = clean_word(word)
+        letter = letter.lower()
+        word = clean_word(word, False)
+        upper_target_letter = letter.upper()
+        target_pos = word.find(upper_target_letter)
+        if target_pos < 0:
+            target_pos = word.find(letter)
+        self.words[letter] = word.lower()
+        self.targets[letter] = target_pos
 
     def __getitem__(self, letter: str):
         return self.words.get(letter.lower(), '')
@@ -34,28 +50,22 @@ class WordShuffler:
     def make_display(self, target_letter: str):
         target_letter = target_letter.lower()
         target_word = self[target_letter]
-        if not target_word or target_letter not in target_word:
-            return f'{target_letter.upper()} word needed.'
-        display_parts = [highlight_letter(target_word, target_letter)]
-        try:
-            target_letter_counts = Counter(self.all_letter_counts[target_word])
-        except KeyError:
-            target_letter_counts = Counter(target_word)
-            display_parts[0] += ' (unknown word)'
-        target_letter_counts[target_letter] -= 1
+        upper_target_letter = target_letter.upper()
+        target_pos = self.targets.get(target_letter, -1)
+        if not target_word or target_pos < 0:
+            return f'{upper_target_letter} word needed.'
+
+        display_parts = [highlight_position(target_word, target_pos)]
+        word_anagrams = self.anagrams[anagram_root(target_word)]
         matches = []
-        for word, letter_counts in self.all_letter_counts.items():
-            if word == target_word:
+        is_known = False
+        for word_anagram in word_anagrams:
+            if word_anagram == target_word:
+                is_known = True
                 continue
-            counts_diff = Counter(letter_counts)
-            counts_diff.subtract(target_letter_counts)
-            if any(n < 0 for n in counts_diff.values()):
-                continue
-            if sum(counts_diff.values()) == 1:
-                extra_letter = [c
-                                for c, count in counts_diff.items()
-                                if count == 1][0]
-                matches.append(highlight_letter(word, extra_letter))
+            matches.append(highlight_position(word_anagram, target_pos))
+        if not is_known:
+            display_parts[0] += ' (unknown word)'
         other_words = matches
         if other_words:
             display_parts.append(', '.join(other_words))
@@ -66,16 +76,18 @@ class WordShuffler:
         default_clue = target_letter.upper()
         if len(self.words) < self.min_words:
             return default_clue
-        for other_letter, word in self.words.items():
-            if other_letter not in word:
-                return default_clue
+        if any(pos < 0 for pos in self.targets.values()):
+            return default_clue
         target_word = self[target_letter].upper()
-        target_letter = default_clue
-        clue_letters = list(target_word.replace(target_letter, '', 1))
-        if len(clue_letters) == len(target_word):
-            return target_letter
+        clue_letters = list(target_word)
         shuffle(clue_letters)
-        return ''.join(clue_letters)
+        letter_text = ''.join(clue_letters)
+        target_pos = self.targets[target_letter]
+        blanks = [' ', '_'] * len(target_word) + [' ']
+        blanks[target_pos*2:target_pos*2+1] = '['
+        blanks[target_pos*2+2:target_pos*2+3] = ']'
+        blank_text = ''.join(blanks).strip()
+        return blank_text + '\n' + letter_text
 
     def make_clues(self):
         return {letter: self.make_clue(letter) for letter in self.words}
