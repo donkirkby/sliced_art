@@ -280,19 +280,19 @@ def test_art_shuffler_shuffle(pixmap_differ, monkeypatch):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'test_art_shuffler_shuffle')
-    outline_rect(expected, 15, 0, 70, 70, blue)
-    outline_rect(expected, 15, 100, 70, 70, blue)
-    outline_rect(expected, 115, 0, 70, 70, green)
-    outline_rect(expected, 115, 100, 70, 70, green)
-    expected.fillRect(138, 123, 24, 24, blue)
+    outline_rect(expected, 20, 0, 60, 60, blue)
+    outline_rect(expected, 20, 100, 60, 60, blue)
+    outline_rect(expected, 120, 0, 60, 60, green)
+    outline_rect(expected, 120, 100, 60, 60, green)
+    expected.fillRect(140, 120, 20, 20, blue)
 
     font = expected.font()
-    font.setPixelSize(11)
+    font.setPixelSize(15)
     expected.setFont(font)
-    expected.drawText(0, 70, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'D')
-    expected.drawText(100, 70, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'C')
-    expected.drawText(0, 170, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'B')
-    expected.drawText(100, 170, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'A')
+    expected.drawText(0, 60, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'D')
+    expected.drawText(100, 60, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'C')
+    expected.drawText(0, 160, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'B')
+    expected.drawText(100, 160, 100, 15, Qt.AlignmentFlag.AlignHCenter, 'A')
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
@@ -318,37 +318,39 @@ def test_art_shuffler_shuffle_clues(pixmap_differ, monkeypatch):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'test_art_shuffler_shuffle_clues')
-    outline_rect(expected, 15, 0, 70, 70, blue)
-    outline_rect(expected, 15, 100, 70, 70, blue)
-    outline_rect(expected, 115, 0, 70, 70, green)
-    outline_rect(expected, 115, 100, 70, 70, green)
-    expected.fillRect(138, 123, 24, 24, blue)
+    outline_rect(expected, 20, 0, 60, 60, blue)
+    outline_rect(expected, 20, 100, 60, 60, blue)
+    outline_rect(expected, 120, 0, 60, 60, green)
+    outline_rect(expected, 120, 100, 60, 60, green)
+    expected.fillRect(140, 120, 20, 20, blue)
 
     font = expected.font()
-    font.setPixelSize(11)
+    font.setPixelSize(12)
     expected.setFont(font)
-    expected.drawText(0, 70,
-                      100, 30,
+    expected.drawText(0, 60,
+                      100, 40,
                       Qt.AlignmentFlag.AlignHCenter,
-                      '[_]_ _ _ _\nDELTA')
-    expected.drawText(100, 70,
-                      100, 30,
+                      '(_)_ _ _ _\nDUMBFOUNDING')
+    font.setPixelSize(15)
+    expected.setFont(font)
+    expected.drawText(100, 60,
+                      100, 40,
                       Qt.AlignmentFlag.AlignHCenter,
-                      '[_]_ _ _ _ _ _\nCHARLIE')
-    expected.drawText(0, 170,
-                      100, 30,
+                      '(_)_ _ _ _ _ _\nCHARLIE')
+    expected.drawText(0, 160,
+                      100, 40,
                       Qt.AlignmentFlag.AlignHCenter,
-                      '[_]_ _ _\nBETA')
-    expected.drawText(100, 170,
-                      100, 30,
+                      '(_)_ _ _\nBETA')
+    expected.drawText(100, 160,
+                      100, 40,
                       Qt.AlignmentFlag.AlignHCenter,
-                      '[_]_ _ _ _\nALPHA')
+                      '(_)_ _ _ _\nALPHA')
 
     actual.end()
-    clues = dict(a='[_]_ _ _ _\nALPHA',
-                 b='[_]_ _ _\nBETA',
-                 c='[_]_ _ _ _ _ _\nCHARLIE',
-                 d='[_]_ _ _ _\nDELTA')
+    clues = dict(a='(_)_ _ _ _\nALPHA',
+                 b='(_)_ _ _\nBETA',
+                 c='(_)_ _ _ _ _ _\nCHARLIE',
+                 d='(_)_ _ _ _\nDUMBFOUNDING')
     shuffler = ArtShuffler(2, 2, actual.device(), clues=clues)
 
     shuffler.shuffle()

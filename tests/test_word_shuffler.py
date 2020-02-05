@@ -170,7 +170,7 @@ def test_make_clue(monkeypatch):
     target_letter = 'w'
     word_shuffler[target_letter] = 'towards'
 
-    expected_clue = '_ _[_]_ _ _ _\nSDRAWOT'
+    expected_clue = '_ _(_)_ _ _ _\nSDRAWOT'
 
     clue = word_shuffler.make_clue(target_letter)
 
@@ -182,7 +182,7 @@ def test_make_clue_never_matches():
     target_letter = 'o'
     word_shuffler[target_letter] = 'mom'
 
-    forbidden_clue = '_[_]_\nMOM'
+    forbidden_clue = '_(_)_\nMOM'
 
     for _ in range(100):
         clue = word_shuffler.make_clue(target_letter)
@@ -195,7 +195,7 @@ def test_make_clue_must_match():
     target_letter = 'a'
     word_shuffler[target_letter] = 'aa'
 
-    only_clue = '[_]_\nAA'
+    only_clue = '(_)_\nAA'
 
     clue = word_shuffler.make_clue(target_letter)
 
@@ -242,7 +242,7 @@ def test_make_clues(monkeypatch):
     word_shuffler['a'] = 'black'
     word_shuffler['o'] = 'book'
 
-    expected_clues = dict(a='_ _[_]_ _\nKCALB', o='_[_]_ _\nKOOB')
+    expected_clues = dict(a='_ _(_)_ _\nKCALB', o='_(_)_ _\nKOOB')
 
     clues = word_shuffler.make_clues()
 

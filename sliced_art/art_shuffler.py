@@ -57,7 +57,7 @@ class ArtShuffler:
             painter.drawLine(x, top_border, x, top_border+scaled_art.height())
 
     def draw(self, art: QPixmap, painter: typing.Optional[QPainter] = None):
-        filled_portion = 0.7 if self.is_shuffled else 0.9
+        filled_portion = 0.6 if self.is_shuffled else 0.9
         scaled_art = art.scaled(self.rect.width()*filled_portion,
                                 self.rect.height()*filled_portion,
                                 Qt.AspectRatioMode.KeepAspectRatio)
@@ -97,14 +97,14 @@ class ArtShuffler:
                                                     cell_width, padding,
                                                     Qt.AlignmentFlag.AlignLeft,
                                                     clue)
-                        if (rect.width() <= cell_width and
+                        if (rect.width() <= cell_width + padding and
                                 rect.height() <= padding):
                             break
                         new_size *= 0.9
                         font.setPixelSize(new_size)
                         painter.setFont(font)
-                    painter.drawText(x+padding/2, y+cell_height,
-                                     cell_width, padding,
+                    painter.drawText(x, y+cell_height,
+                                     cell_width + padding, padding,
                                      Qt.AlignmentFlag.AlignHCenter, clue)
                     font.setPixelSize(original_size)
                     painter.setFont(font)

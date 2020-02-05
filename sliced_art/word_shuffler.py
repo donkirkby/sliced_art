@@ -88,8 +88,8 @@ class WordShuffler:
                 break
         target_pos = self.targets[target_letter]
         blanks = [' ', '_'] * len(target_word) + [' ']
-        blanks[target_pos*2:target_pos*2+1] = '['
-        blanks[target_pos*2+2:target_pos*2+3] = ']'
+        blanks[target_pos*2:target_pos*2+1] = '('
+        blanks[target_pos*2+2:target_pos*2+3] = ')'
         blank_text = ''.join(blanks).strip()
         return blank_text + '\n' + letter_text
 
