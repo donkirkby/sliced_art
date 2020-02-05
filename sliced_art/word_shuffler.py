@@ -80,8 +80,12 @@ class WordShuffler:
             return default_clue
         target_word = self[target_letter].upper()
         clue_letters = list(target_word)
-        shuffle(clue_letters)
-        letter_text = ''.join(clue_letters)
+        letter_text = None
+        for _ in range(10):
+            shuffle(clue_letters)
+            letter_text = ''.join(clue_letters)
+            if letter_text != target_word:
+                break
         target_pos = self.targets[target_letter]
         blanks = [' ', '_'] * len(target_word) + [' ']
         blanks[target_pos*2:target_pos*2+1] = '['

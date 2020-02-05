@@ -5,7 +5,7 @@ from functools import partial
 from pathlib import Path
 
 from PySide2.QtCore import Qt, QSize, QSettings, QCoreApplication, QRect, QTimer
-from PySide2.QtGui import QImageReader, QPixmap, QResizeEvent, QPdfWriter, QPainter, QImage
+from PySide2.QtGui import QImageReader, QPixmap, QResizeEvent, QPdfWriter, QPainter, QImage, QPaintDevice
 from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, \
     QFileDialog, QGraphicsPixmapItem, QLabel, QGridLayout, QLineEdit
 
@@ -31,6 +31,7 @@ class MainWindow(QMainWindow):
         self.ui.action_open_art.triggered.connect(self.open_image)
         self.ui.action_open_words.triggered.connect(self.open_words)
         self.ui.action_save.triggered.connect(self.save_pdf)
+        self.ui.action_save_png.triggered.connect(self.save_png)
         self.ui.action_shuffle.triggered.connect(self.shuffle)
         self.ui.action_sort.triggered.connect(self.sort)
 
@@ -244,9 +245,29 @@ class MainWindow(QMainWindow):
         if not file_name:
             return
         self.settings.setValue('pdf_folder', os.path.dirname(file_name))
-        self.check_clues()
         writer = QPdfWriter(file_name)
         writer.setPageSize(QPdfWriter.Letter)
+        writer.setTitle('Sliced Art Puzzle')
+        writer.setCreator('Don Kirkby')
+        self.paint_puzzle(writer)
+
+    def save_png(self):
+        pdf_folder = self.settings.value('pdf_folder')
+        file_name, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save an image file.",
+            dir=pdf_folder,
+            filter='Images (*.png)',
+            options=QFileDialog.DontUseNativeDialog)
+        if not file_name:
+            return
+        writer = QPixmap(1000, 2000)
+        self.paint_puzzle(writer)
+        writer.save(file_name)
+        self.settings.setValue('pdf_folder', os.path.dirname(file_name))
+
+    def paint_puzzle(self, writer: QPaintDevice):
+        self.check_clues()
         painter = QPainter(writer)
         try:
             print_shuffler = ArtShuffler(self.art_shuffler.rows,

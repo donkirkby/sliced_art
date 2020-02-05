@@ -177,6 +177,31 @@ def test_make_clue(monkeypatch):
     assert clue == expected_clue
 
 
+def test_make_clue_never_matches():
+    word_shuffler = WordShuffler()
+    target_letter = 'o'
+    word_shuffler[target_letter] = 'mom'
+
+    forbidden_clue = '_[_]_\nMOM'
+
+    for _ in range(100):
+        clue = word_shuffler.make_clue(target_letter)
+
+        assert clue != forbidden_clue
+
+
+def test_make_clue_must_match():
+    word_shuffler = WordShuffler()
+    target_letter = 'a'
+    word_shuffler[target_letter] = 'aa'
+
+    only_clue = '[_]_\nAA'
+
+    clue = word_shuffler.make_clue(target_letter)
+
+    assert clue == only_clue
+
+
 def test_make_clue_missing_letter():
     word_shuffler = WordShuffler()
     target_letter = 'w'
