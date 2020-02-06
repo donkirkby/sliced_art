@@ -390,15 +390,28 @@ def test_art_shuffler_grid(pixmap_differ):
     art = QPixmap(1000, 1000)  # Only shape matters.
 
     actual, expected = pixmap_differ.start(200, 200, 'art_shuffler_grid')
+    font = expected.font()
+    font.setPixelSize(15)
+    expected.setFont(font)
+    expected.drawText(16, 0, 56, 16, Qt.AlignmentFlag.AlignCenter, 'A')
+    expected.drawText(72, 0, 56, 16, Qt.AlignmentFlag.AlignCenter, 'B')
+    expected.drawText(128, 0, 56, 16, Qt.AlignmentFlag.AlignCenter, 'C')
+    expected.drawText(0, 72, 16, 56, Qt.AlignmentFlag.AlignCenter, 'D')
+    expected.drawText(184, 72, 16, 56, Qt.AlignmentFlag.AlignCenter, 'F')
+    expected.drawText(16, 184, 56, 16, Qt.AlignmentFlag.AlignCenter, 'G')
+    expected.drawText(72, 184, 56, 16, Qt.AlignmentFlag.AlignCenter, 'H')
+    expected.drawText(128, 184, 56, 16, Qt.AlignmentFlag.AlignCenter, 'I')
     grey_pen = QPen(QColor('lightgrey'))
     expected.setPen(grey_pen)
 
-    expected.drawRect(10, 10, 180, 180)
-    expected.drawLine(10, 100, 190, 100)
-    expected.drawLine(100, 10, 100, 190)
+    expected.drawRect(16, 16, 168, 168)
+    expected.drawLine(16, 72, 184, 72)
+    expected.drawLine(16, 128, 184, 128)
+    expected.drawLine(72, 16, 72, 184)
+    expected.drawLine(128, 16, 128, 184)
 
     actual.end()
-    shuffler = ArtShuffler(2, 2, actual.device())
+    shuffler = ArtShuffler(3, 3, actual.device())
     shuffler.shuffle()
     shuffler.sort()
 
