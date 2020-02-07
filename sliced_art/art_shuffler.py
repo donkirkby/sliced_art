@@ -42,7 +42,6 @@ class ArtShuffler:
         top_border = (self.rect.height()-scaled_art.height()) / 2
         if painter is None:
             painter = QPainter(self.target)
-        painter.translate(0, self.rect.top())
         font = painter.font()
         font.setPixelSize(top_border*0.99)
         painter.setFont(font)
@@ -52,6 +51,7 @@ class ArtShuffler:
                                            Qt.AlignmentFlag.AlignLeft,
                                            'W')
         painter.fillRect(self.rect, QColor('white'))
+        painter.translate(0, self.rect.top())
         ascii_code = ord('A')
         for i in range(self.rows):
             for j in range(self.cols):
