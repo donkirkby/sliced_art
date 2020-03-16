@@ -71,6 +71,37 @@ class Ui_MainWindow(object):
         self.gridLayout_2.addWidget(self.word_scroll, 0, 0, 1, 1)
 
         self.tabWidget.addTab(self.words, "")
+        self.options = QWidget()
+        self.options.setObjectName(u"options")
+        self.gridLayout_4 = QGridLayout(self.options)
+        self.gridLayout_4.setObjectName(u"gridLayout_4")
+        self.rows = QSpinBox(self.options)
+        self.rows.setObjectName(u"rows")
+        self.rows.setMinimum(1)
+        self.rows.setMaximum(10)
+        self.rows.setValue(6)
+
+        self.gridLayout_4.addWidget(self.rows, 0, 1, 1, 1)
+
+        self.rows_label = QLabel(self.options)
+        self.rows_label.setObjectName(u"rows_label")
+
+        self.gridLayout_4.addWidget(self.rows_label, 0, 0, 1, 1, Qt.AlignRight)
+
+        self.columns_label = QLabel(self.options)
+        self.columns_label.setObjectName(u"columns_label")
+
+        self.gridLayout_4.addWidget(self.columns_label, 1, 0, 1, 1, Qt.AlignRight)
+
+        self.columns = QSpinBox(self.options)
+        self.columns.setObjectName(u"columns")
+        self.columns.setMinimum(1)
+        self.columns.setMaximum(10)
+        self.columns.setValue(4)
+
+        self.gridLayout_4.addWidget(self.columns, 1, 1, 1, 1)
+
+        self.tabWidget.addTab(self.options, "")
 
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
 
@@ -139,6 +170,9 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(shortcut)
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.art), QCoreApplication.translate("MainWindow", u"Art", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.words), QCoreApplication.translate("MainWindow", u"Words", None))
+        self.rows_label.setText(QCoreApplication.translate("MainWindow", u"Rows:", None))
+        self.columns_label.setText(QCoreApplication.translate("MainWindow", u"Columns:", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.options), QCoreApplication.translate("MainWindow", u"Options", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"&File", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"&View", None))
     # retranslateUi
