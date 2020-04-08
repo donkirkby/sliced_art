@@ -5,7 +5,8 @@ from functools import partial
 from pathlib import Path
 
 from PySide2.QtCore import Qt, QSize, QSettings, QCoreApplication, QRect, QTimer
-from PySide2.QtGui import QImageReader, QPixmap, QResizeEvent, QPdfWriter, QPainter, QImage, QPaintDevice
+from PySide2.QtGui import QImageReader, QPixmap, QResizeEvent, QPdfWriter, \
+    QPainter, QImage, QPaintDevice
 from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, \
     QFileDialog, QGraphicsPixmapItem, QLabel, QGridLayout, QLineEdit
 
@@ -13,6 +14,7 @@ from sliced_art.art_shuffler import ArtShuffler
 from sliced_art.main_window import Ui_MainWindow
 from sliced_art.selection_grid import SelectionGrid
 from sliced_art.word_shuffler import WordShuffler
+from sliced_art.word_stripper import WordStripper
 
 QCoreApplication.setOrganizationDomain("donkirkby.github.io")
 QCoreApplication.setOrganizationName("Don Kirkby")
@@ -103,10 +105,11 @@ class MainWindow(QMainWindow):
         if self.words_path is not None:
             self.load_words(self.words_path)
 
+        letters = [chr(65+i) for i in range(word_count)]
+        if self.word_shuffler.needs_blank:
+            letters.insert(0, '')
         word_fields = {}
-        for i in range(word_count):
-            letter = chr(65+i)
-
+        for i, letter in enumerate(letters):
             word_field = QLineEdit()
             self.word_layout.addWidget(word_field, i, 0)
             # noinspection PyUnresolvedReferences
@@ -116,8 +119,7 @@ class MainWindow(QMainWindow):
             self.word_layout.addWidget(word_label, i, 1)
             self.word_labels[letter] = word_label
             word_fields[letter] = word_field
-        for i in range(word_count):
-            letter = chr(65+i)
+        for i, letter in enumerate(letters):
             word = self.settings.value(f'word_{letter}', '')
             self.word_shuffler[letter] = word
             self.dirty_letters.add(letter)
@@ -156,7 +158,11 @@ class MainWindow(QMainWindow):
 
     def load_words(self, words_path):
         with open(words_path) as f:
-            self.word_shuffler = WordShuffler(f)
+            choice = 0
+            if choice == 0:
+                self.word_shuffler = WordShuffler(f)
+            else:
+                self.word_shuffler = WordStripper(f)
 
     def open_image(self):
         formats = QImageReader.supportedImageFormats()

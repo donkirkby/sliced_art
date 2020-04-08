@@ -23,6 +23,7 @@ class WordShuffler:
     def __init__(self,
                  all_words: typing.Optional[typing.Iterable[str]] = None,
                  min_words: int = 0):
+        self.needs_blank = False
         self.min_words = min_words
         self.anagrams = defaultdict(list)
         if all_words is not None:
