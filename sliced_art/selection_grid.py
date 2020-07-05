@@ -97,6 +97,7 @@ class SelectionGrid(QGraphicsRectItem):
             self.interactive_resize(event.pos())
         else:
             super().mouseMoveEvent(event)
+            self.on_moved()
 
     def mouseReleaseEvent(self, event):
         """
