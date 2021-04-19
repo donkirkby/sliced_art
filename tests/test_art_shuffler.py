@@ -3,7 +3,7 @@ from pathlib import Path
 from turtle import Turtle
 
 import pytest
-from PySide2.QtCore import QByteArray, QBuffer, QIODevice, QTextCodec, Qt
+from PySide2.QtCore import QByteArray, QBuffer, QIODevice, Qt
 from PySide2.QtGui import QPixmap, QPainter, QColor, QImage, QPen
 from PySide2.QtWidgets import QApplication
 
@@ -25,8 +25,7 @@ def encode_image(image: QImage):
     buffer.open(QIODevice.WriteOnly)
     image.save(buffer, "PNG")  # writes pixmap into bytes in PNG format
     encoded_bytes = image_bytes.toBase64()
-    codec = QTextCodec.codecForName(b"UTF-8")
-    encoded_string = codec.toUnicode(encoded_bytes)
+    encoded_string = encoded_bytes.data().decode()
     return encoded_string
 
 
@@ -39,8 +38,8 @@ def display_diff(actual_image: QImage,
         return
     t = Turtle()
     try:
-        w = t.screen.cv.cget('width')
-        h = t.screen.cv.cget('height')
+        w = t.getscreen().window_width()
+        h = t.getscreen().window_height()
         ox, oy = w / 2, h / 2
         text_height = 20
         t.penup()

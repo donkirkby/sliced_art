@@ -10,4 +10,4 @@ sliced-art = {editable = true,extras = ["dev"],path = "."}
 e1839a8 = {editable = true,path = "."}
 
 [requires]
-python_version = "3.6"
+python_version = "3.9"
