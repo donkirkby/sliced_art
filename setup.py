@@ -29,7 +29,7 @@ setup(name='sliced_art',
           'Programming Language :: Python :: 3.9'],
       keywords='puzzle art drawing',
       packages=['sliced_art'],
-      install_requires=['PySide2'],
+      install_requires=['PySide6'],
       extras_require={'dev': ['pytest',
                               'coverage']},
       entry_points={

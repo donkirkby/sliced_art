@@ -1,8 +1,8 @@
 import typing
 from random import shuffle
 
-from PySide2.QtCore import QRect, Qt
-from PySide2.QtGui import QPainter, QPaintDevice, QPixmap, QColor, QPen
+from PySide6.QtCore import QRect, Qt
+from PySide6.QtGui import QPainter, QPaintDevice, QPixmap, QColor, QPen
 
 
 class ArtShuffler:

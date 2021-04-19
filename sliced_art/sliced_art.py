@@ -4,10 +4,10 @@ import typing
 from functools import partial
 from pathlib import Path
 
-from PySide2.QtCore import Qt, QSize, QSettings, QCoreApplication, QRect, QTimer
-from PySide2.QtGui import QImageReader, QPixmap, QResizeEvent, QPdfWriter, \
+from PySide6.QtCore import Qt, QSize, QSettings, QCoreApplication, QRect, QTimer
+from PySide6.QtGui import QImageReader, QPixmap, QResizeEvent, QPdfWriter, \
     QPainter, QImage, QPaintDevice
-from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, \
+from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsScene, \
     QFileDialog, QGraphicsPixmapItem, QLabel, QGridLayout, QLineEdit
 
 from sliced_art.art_shuffler import ArtShuffler

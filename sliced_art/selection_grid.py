@@ -1,6 +1,6 @@
-from PySide2.QtCore import Qt, QRectF
-from PySide2.QtGui import QBrush, QPainterPath, QPainter, QColor, QPen
-from PySide2.QtWidgets import QGraphicsRectItem, QGraphicsItem
+from PySide6.QtCore import Qt, QRectF
+from PySide6.QtGui import QBrush, QPainterPath, QPainter, QColor, QPen
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem
 
 
 class SelectionGrid(QGraphicsRectItem):
