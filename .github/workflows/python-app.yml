@@ -30,4 +30,4 @@ jobs:
     - name: Test with pytest
       run: |
         # Add QT_DEBUG_PLUGINS=1 before xvfb-run to debug Qt library problems.
-        xvfb-run -a pipenv run pytest
+        QT_DEBUG_PLUGINS=1 xvfb-run -a pipenv run pytest
