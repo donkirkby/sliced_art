@@ -18,41 +18,6 @@ def pixmap_differ():
     assert app
 
 
-def display_diff(actual_image: QImage,
-                 diff_image: QImage,
-                 expected_image: QImage):
-    # Display image when in live turtle mode.
-    display_image = getattr(Turtle, 'display_image', None)
-    if display_image is None:
-        return
-    t = Turtle()
-    try:
-        w = t.getscreen().window_width()
-        h = t.getscreen().window_height()
-        ox, oy = w / 2, h / 2
-        text_height = 20
-        t.penup()
-        t.goto(-ox, oy)
-        t.right(90)
-        t.forward(text_height)
-        t.write(f'Actual')
-        display_image(ox + t.xcor(), oy - t.ycor(),
-                      image=encode_image(actual_image))
-        t.forward(actual_image.height())
-        t.forward(text_height)
-        t.write(f'Diff')
-        display_image(ox + t.xcor(), oy - t.ycor(),
-                      image=encode_image(diff_image))
-        t.forward(diff_image.height())
-        t.forward(text_height)
-        t.write('Expected')
-        display_image(ox + t.xcor(), oy - t.ycor(),
-                      image=encode_image(expected_image))
-        t.forward(expected_image.height())
-    except Exception as ex:
-        t.write(str(ex))
-
-
 def outline_rect(painter, x, y, width, height, colour):
     old_pen = painter.pen()
     grey_pen = QPen(QColor('lightgrey'))
@@ -221,6 +186,16 @@ def test_art_shuffler_shuffle_clues(pixmap_differ, monkeypatch):
     font = expected.font()
     font.setPixelSize(12)
     expected.setFont(font)
+    # noinspection PyTypeChecker
+    rect = expected.boundingRect(0, 0,
+                                 100, 40,
+                                 Qt.AlignmentFlag.AlignLeft,
+                                 'DUMBFOUNDING')
+    if rect.width() > 97:
+        font.setPixelSize(10)
+        expected.setFont(font)
+
+    print('rect', rect)
     expected.drawText(0, 60,
                       100, 40,
                       Qt.AlignmentFlag.AlignHCenter,
@@ -286,7 +261,7 @@ def test_art_shuffler_grid(pixmap_differ):
 
     actual, expected = pixmap_differ.start(200, 200, 'art_shuffler_grid')
     font = expected.font()
-    font.setPixelSize(15)
+    font.setPixelSize(16)
     expected.setFont(font)
     expected.drawText(16, 0, 56, 16, Qt.AlignmentFlag.AlignCenter, 'A')
     expected.drawText(72, 0, 56, 16, Qt.AlignmentFlag.AlignCenter, 'B')

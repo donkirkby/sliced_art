@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt, QSize, QSettings, QCoreApplication, QRect, QTimer
 from PySide6.QtGui import QImageReader, QPixmap, QResizeEvent, QPdfWriter, \
-    QPainter, QImage, QPaintDevice
+    QPainter, QImage, QPaintDevice, QPageSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsScene, \
     QFileDialog, QGraphicsPixmapItem, QLabel, QGridLayout, QLineEdit
 
@@ -282,7 +282,7 @@ class MainWindow(QMainWindow):
             return
         self.settings.setValue('pdf_folder', os.path.dirname(file_name))
         writer = QPdfWriter(file_name)
-        writer.setPageSize(QPdfWriter.Letter)
+        writer.setPageSize(QPageSize(QPageSize.Letter))
         writer.setTitle('Sliced Art Puzzle')
         writer.setCreator('Don Kirkby')
         self.paint_puzzle(writer)

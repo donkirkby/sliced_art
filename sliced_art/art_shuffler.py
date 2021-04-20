@@ -43,13 +43,10 @@ class ArtShuffler:
         if painter is None:
             painter = QPainter(self.target)
         font = painter.font()
-        font.setPixelSize(top_border*0.99)
+        font_size = round(top_border * 0.99)
+        font.setPixelSize(font_size)
         painter.setFont(font)
-        # noinspection PyTypeChecker
-        letter_rect = painter.boundingRect(0, 0,
-                                           cell_width, cell_height,
-                                           Qt.AlignmentFlag.AlignLeft,
-                                           'W')
+        print(f'font size: {font.pixelSize()}')
         painter.fillRect(self.rect, QColor('white'))
         painter.translate(0, self.rect.top())
         ascii_code = ord('A')
@@ -61,17 +58,17 @@ class ArtShuffler:
                 w = cell_width
                 h = cell_height
                 if i == 0:
-                    y = top_border - letter_rect.height() * 0.9
-                    h = letter_rect.height()
+                    y = top_border - font_size
+                    h = font_size
                 elif i == self.rows - 1:
                     y = self.rect.height() - top_border
-                    h = letter_rect.height()
+                    h = font_size
                 elif j == 0:
-                    x = left_border - letter_rect.width() * 1.05
-                    w = letter_rect.width()
+                    x = left_border - font_size
+                    w = font_size
                 elif j == self.cols - 1:
                     x = self.rect.width() - left_border
-                    w = letter_rect.width() * 1.2
+                    w = font_size
                 else:
                     x = y = w = h = 0
                 if w != 0:
