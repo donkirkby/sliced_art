@@ -11,7 +11,9 @@ class ArtShuffler:
                  cols: int,
                  target: QPaintDevice,
                  rect: QRect = None,
-                 clues: typing.Optional[typing.Dict[str, str]] = None):
+                 clues: typing.Dict[str, str] = None,
+                 row_clues: typing.Iterable[QPixmap] = None,
+                 column_clues: typing.Iterable[QPixmap] = None):
         """ Initialize the object.
 
         :param rows: the number of rows to break the art into
@@ -19,6 +21,8 @@ class ArtShuffler:
         :param target: what to paint the pieces on
         :param rect: where to paint the pieces, or None to use the full target
         :param clues: word clues to display, defaults to just the letters
+        :param row_clues: one image to use as a clue for each row
+        :param column_clues: one image to use as a clue for each column
         """
         self.rows = rows
         self.cols = cols
@@ -30,6 +34,8 @@ class ArtShuffler:
                                                  for j in range(cols))]
         self.is_shuffled = False
         self.clues = clues or {}
+        self.row_clues = [] if row_clues is None else list(row_clues)
+        self.column_clues = [] if column_clues is None else list(column_clues)
 
     def draw_grid(self, art: QPixmap, painter: typing.Optional[QPainter] = None):
         filled_portion = 0.84
@@ -92,17 +98,17 @@ class ArtShuffler:
         painter.translate(0, -self.rect.top())
 
     def draw(self, art: QPixmap, painter: typing.Optional[QPainter] = None):
-        filled_portion = 0.6 if self.is_shuffled else 0.9
+        filled_portion = 0.6 if self.is_shuffled and not self.row_clues else 0.9
         scaled_art = art.scaled(self.rect.width()*filled_portion,
                                 self.rect.height()*filled_portion,
                                 Qt.AspectRatioMode.KeepAspectRatio)
         if painter is None:
             painter = QPainter(self.target)
         painter.fillRect(self.rect, QColor('white'))
-        cell_height = scaled_art.height() / self.rows
+        cell_height = round(scaled_art.height() / self.rows)
         vertical_padding = self.rect.height() - self.rows * cell_height
         row_padding = vertical_padding / self.rows
-        cell_width = scaled_art.width() / self.cols
+        cell_width = round(scaled_art.width() / self.cols)
         horizontal_padding = self.rect.width() - self.cols * cell_width
         col_padding = horizontal_padding / self.cols
         padding = min(row_padding, col_padding)
@@ -114,7 +120,7 @@ class ArtShuffler:
         old_pen = painter.pen()
         grey_pen = QPen(QColor('lightgrey'))
         width = max(cell_width/35, 2)
-        grey_pen.setWidth(width)
+        grey_pen.setWidth(round(width))
         y = top_border
         cell_index = 0
         for i in range(self.rows):
@@ -124,6 +130,10 @@ class ArtShuffler:
                 clue = self.clues.get(label.lower(), label)
                 sx = sj * cell_width
                 sy = si * cell_height
+                painter.setPen(grey_pen)
+                painter.drawRect(x+padding/2, y,
+                                 cell_width, cell_height)
+                painter.setPen(old_pen)
                 if self.is_shuffled:
                     original_size = new_size = font.pixelSize()
                     while True:
@@ -138,15 +148,23 @@ class ArtShuffler:
                         new_size *= 0.9
                         font.setPixelSize(new_size)
                         painter.setFont(font)
-                    painter.drawText(x, y+cell_height,
-                                     cell_width + padding, padding,
-                                     Qt.AlignmentFlag.AlignHCenter, clue)
+                    if not self.row_clues:
+                        painter.drawText(x, y+cell_height,
+                                         cell_width + padding, padding,
+                                         Qt.AlignmentFlag.AlignHCenter, clue)
+                    else:
+                        painter.drawPixmap(x + padding / 2, y,
+                                           cell_width, cell_height,
+                                           self.row_clues[si],
+                                           0, 0,
+                                           0, 0)
+                        painter.drawPixmap(x + padding / 2, y,
+                                           cell_width, cell_height,
+                                           self.column_clues[sj],
+                                           0, 0,
+                                           0, 0)
                     font.setPixelSize(original_size)
                     painter.setFont(font)
-                painter.setPen(grey_pen)
-                painter.drawRect(x+padding/2, y,
-                                 cell_width, cell_height)
-                painter.setPen(old_pen)
                 painter.drawPixmap(x+padding/2, y,
                                    cell_width, cell_height,
                                    scaled_art,

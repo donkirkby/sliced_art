@@ -3,22 +3,19 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.14.1
+## Created by: Qt User Interface Compiler version 6.0.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
-    QRect, QSize, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
-    QRadialGradient, QAction)
+from PySide6.QtCore import *
+from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        if MainWindow.objectName():
+        if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(800, 600)
         self.action_open_art = QAction(MainWindow)
@@ -71,23 +68,20 @@ class Ui_MainWindow(object):
         self.gridLayout_2.addWidget(self.word_scroll, 0, 0, 1, 1)
 
         self.tabWidget.addTab(self.words, "")
+        self.symbols = QWidget()
+        self.symbols.setObjectName(u"symbols")
+        self.verticalLayout_2 = QVBoxLayout(self.symbols)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.graphicsView = QGraphicsView(self.symbols)
+        self.graphicsView.setObjectName(u"graphicsView")
+
+        self.verticalLayout_2.addWidget(self.graphicsView)
+
+        self.tabWidget.addTab(self.symbols, "")
         self.options = QWidget()
         self.options.setObjectName(u"options")
         self.gridLayout_4 = QGridLayout(self.options)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
-        self.rows = QSpinBox(self.options)
-        self.rows.setObjectName(u"rows")
-        self.rows.setMinimum(1)
-        self.rows.setMaximum(10)
-        self.rows.setValue(6)
-
-        self.gridLayout_4.addWidget(self.rows, 0, 1, 1, 1)
-
-        self.rows_label = QLabel(self.options)
-        self.rows_label.setObjectName(u"rows_label")
-
-        self.gridLayout_4.addWidget(self.rows_label, 0, 0, 1, 1, Qt.AlignRight)
-
         self.columns_label = QLabel(self.options)
         self.columns_label.setObjectName(u"columns_label")
 
@@ -100,6 +94,46 @@ class Ui_MainWindow(object):
         self.columns.setValue(4)
 
         self.gridLayout_4.addWidget(self.columns, 1, 1, 1, 1)
+
+        self.rows = QSpinBox(self.options)
+        self.rows.setObjectName(u"rows")
+        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.rows.sizePolicy().hasHeightForWidth())
+        self.rows.setSizePolicy(sizePolicy)
+        self.rows.setMinimum(1)
+        self.rows.setMaximum(10)
+        self.rows.setValue(6)
+
+        self.gridLayout_4.addWidget(self.rows, 0, 1, 1, 1)
+
+        self.rows_label = QLabel(self.options)
+        self.rows_label.setObjectName(u"rows_label")
+
+        self.gridLayout_4.addWidget(self.rows_label, 0, 0, 1, 1, Qt.AlignRight)
+
+        self.groupBox = QGroupBox(self.options)
+        self.groupBox.setObjectName(u"groupBox")
+        self.verticalLayout = QVBoxLayout(self.groupBox)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.word_clues_radio = QRadioButton(self.groupBox)
+        self.word_clues_radio.setObjectName(u"word_clues_radio")
+        self.word_clues_radio.setChecked(True)
+
+        self.verticalLayout.addWidget(self.word_clues_radio)
+
+        self.image_clues_radio = QRadioButton(self.groupBox)
+        self.image_clues_radio.setObjectName(u"image_clues_radio")
+
+        self.verticalLayout.addWidget(self.image_clues_radio)
+
+
+        self.gridLayout_4.addWidget(self.groupBox, 2, 1, 1, 1)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_4.addItem(self.verticalSpacer, 3, 0, 1, 1)
 
         self.tabWidget.addTab(self.options, "")
 
@@ -131,7 +165,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -170,8 +204,12 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(shortcut)
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.art), QCoreApplication.translate("MainWindow", u"Art", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.words), QCoreApplication.translate("MainWindow", u"Words", None))
-        self.rows_label.setText(QCoreApplication.translate("MainWindow", u"Rows:", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.symbols), QCoreApplication.translate("MainWindow", u"Symbols", None))
         self.columns_label.setText(QCoreApplication.translate("MainWindow", u"Columns:", None))
+        self.rows_label.setText(QCoreApplication.translate("MainWindow", u"Rows:", None))
+        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Clue Type:", None))
+        self.word_clues_radio.setText(QCoreApplication.translate("MainWindow", u"Words", None))
+        self.image_clues_radio.setText(QCoreApplication.translate("MainWindow", u"Symbols", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.options), QCoreApplication.translate("MainWindow", u"Options", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"&File", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"&View", None))

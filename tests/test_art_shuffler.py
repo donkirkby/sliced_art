@@ -1,8 +1,5 @@
-from turtle import Turtle
-
 import pytest
-from PySide6.QtCore import QByteArray, QBuffer, QIODevice, Qt
-from PySide6.QtGui import QPixmap, QPainter, QColor, QImage, QPen
+from PySide6.QtGui import Qt, QPixmap, QPainter, QColor, QPen, QBrush
 from PySide6.QtWidgets import QApplication
 
 from sliced_art.art_shuffler import ArtShuffler
@@ -18,10 +15,16 @@ def pixmap_differ():
     assert app
 
 
-def outline_rect(painter, x, y, width, height, colour):
+def outline_rect(painter: QPainter,
+                 x: int,
+                 y: int,
+                 width: int,
+                 height: int,
+                 colour: QColor,
+                 pen_width: int = 2):
     old_pen = painter.pen()
     grey_pen = QPen(QColor('lightgrey'))
-    grey_pen.setWidth(2)
+    grey_pen.setWidth(pen_width)
     painter.setPen(grey_pen)
     painter.drawRect(x, y, width, height)
     painter.fillRect(x, y, width, height, colour)
@@ -39,10 +42,10 @@ def test_art_shuffler_square(pixmap_differ):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'art_shuffler_square')
-    outline_rect(expected, 5, 0, 90, 90, green)
-    outline_rect(expected, 5, 100, 90, 90, green)
-    outline_rect(expected, 105, 0, 90, 90, blue)
-    outline_rect(expected, 105, 100, 90, 90, blue)
+    outline_rect(expected, 5, 0, 90, 90, green, pen_width=3)
+    outline_rect(expected, 5, 100, 90, 90, green, pen_width=3)
+    outline_rect(expected, 105, 0, 90, 90, blue, pen_width=3)
+    outline_rect(expected, 105, 100, 90, 90, blue, pen_width=3)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
@@ -63,10 +66,10 @@ def test_art_shuffler_not_square(pixmap_differ):
     actual, expected = pixmap_differ.start(200,
                                            100,
                                            'test_art_shuffler_not_square')
-    outline_rect(expected, 7, 0, 90, 45, green)
-    outline_rect(expected, 7, 50, 90, 45, green)
-    outline_rect(expected, 102, 0, 90, 45, blue)
-    outline_rect(expected, 102, 50, 90, 45, blue)
+    outline_rect(expected, 7, 0, 90, 45, green, pen_width=3)
+    outline_rect(expected, 7, 50, 90, 45, green, pen_width=3)
+    outline_rect(expected, 102, 0, 90, 45, blue, pen_width=3)
+    outline_rect(expected, 102, 50, 90, 45, blue, pen_width=3)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
@@ -109,10 +112,10 @@ def test_art_shuffler_clears(pixmap_differ):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'test_art_shuffler_clears')
-    outline_rect(expected, 5, 0, 90, 90, green)
-    outline_rect(expected, 5, 100, 90, 90, green)
-    outline_rect(expected, 105, 0, 90, 90, blue)
-    outline_rect(expected, 105, 100, 90, 90, blue)
+    outline_rect(expected, 5, 0, 90, 90, green, pen_width=3)
+    outline_rect(expected, 5, 100, 90, 90, green, pen_width=3)
+    outline_rect(expected, 105, 0, 90, 90, blue, pen_width=3)
+    outline_rect(expected, 105, 100, 90, 90, blue, pen_width=3)
 
     # Pollute the display with a previous version.
     actual.fillRect(50, 50, 100, 100, blue)
@@ -240,10 +243,10 @@ def test_art_shuffler_sort(pixmap_differ):
     painter.end()
 
     actual, expected = pixmap_differ.start(200, 200, 'art_shuffler_sort')
-    outline_rect(expected, 5, 0, 90, 90, green)
-    outline_rect(expected, 5, 100, 90, 90, green)
-    outline_rect(expected, 105, 0, 90, 90, blue)
-    outline_rect(expected, 105, 100, 90, 90, blue)
+    outline_rect(expected, 5, 0, 90, 90, green, pen_width=3)
+    outline_rect(expected, 5, 100, 90, 90, green, pen_width=3)
+    outline_rect(expected, 105, 0, 90, 90, blue, pen_width=3)
+    outline_rect(expected, 105, 100, 90, 90, blue, pen_width=3)
 
     actual.end()
     shuffler = ArtShuffler(2, 2, actual.device())
@@ -286,5 +289,93 @@ def test_art_shuffler_grid(pixmap_differ):
     shuffler.sort()
 
     shuffler.draw_grid(art)
+
+    pixmap_differ.assert_equal()
+
+
+# noinspection DuplicatedCode
+def test_symbols(pixmap_differ, monkeypatch):
+    monkeypatch.setattr('sliced_art.art_shuffler.shuffle',
+                        lambda a: a.reverse())
+
+    transparent = QColor(255, 255, 255, 0)
+    green = QColor('green')
+    blue = QColor('blue')
+    symbol_pen = QPen(QBrush(green), 30)
+
+    art = QPixmap(900, 900)
+    art.fill(transparent)
+    painter = QPainter(art)
+    painter.setBrush(QBrush(blue))
+    painter.drawEllipse(0, 0, 900, 900)
+    painter.end()
+
+    row1 = QPixmap(900, 900)
+    row1.fill(transparent)
+    painter = QPainter(row1)
+    painter.setPen(symbol_pen)
+    painter.drawLine(100, 100, 800, 100)
+    painter.end()
+
+    row2 = QPixmap(900, 900)
+    row2.fill(transparent)
+    painter = QPainter(row2)
+    painter.setPen(symbol_pen)
+    painter.drawLine(100, 700, 800, 700)
+    painter.end()
+
+    col1 = QPixmap(900, 900)
+    col1.fill(transparent)
+    painter = QPainter(col1)
+    painter.setPen(symbol_pen)
+    painter.drawLine(10, 10, 100, 700)
+    painter.end()
+
+    col2 = QPixmap(900, 900)
+    col2.fill(transparent)
+    painter = QPainter(col2)
+    painter.setPen(symbol_pen)
+    painter.drawLine(890, 10, 800, 800)
+    painter.end()
+
+    actual, expected = pixmap_differ.start(200, 200, 'test_art_shuffler_symbols')
+    outline_rect(expected, 5, 0, 90, 90, transparent, pen_width=3)
+    expected.drawPixmap(5, 0, 90, 90, row2)
+    expected.drawPixmap(5, 0, 90, 90, col2)
+    expected.drawPixmap(5, 0, 90, 90,
+                        art,
+                        450, 450, 450, 450)
+    outline_rect(expected, 5, 100, 90, 90, transparent, pen_width=3)
+    expected.drawPixmap(5, 100, 90, 90, row1)
+    expected.drawPixmap(5, 100, 90, 90, col2)
+    expected.drawPixmap(5, 100, 90, 90,
+                        art,
+                        450, 0, 450, 450)
+    outline_rect(expected, 105, 0, 90, 90, transparent, pen_width=3)
+    expected.drawPixmap(105, 0, 90, 90, row2)
+    expected.drawPixmap(105, 0, 90, 90, col1)
+    expected.drawPixmap(105, 0, 90, 90,
+                        art,
+                        0, 450, 450, 450)
+    outline_rect(expected, 105, 100, 90, 90, transparent, pen_width=3)
+    expected.drawPixmap(105, 100, 90, 90, row1)
+    expected.drawPixmap(105, 100, 90, 90, col1)
+    expected.drawPixmap(105, 100, 90, 90,
+                        art,
+                        0, 0, 450, 450)
+
+    font = expected.font()
+    font.setPixelSize(15)
+    expected.setFont(font)
+
+    actual.end()
+    shuffler = ArtShuffler(2,
+                           2,
+                           actual.device(),
+                           row_clues=[row1, row2],
+                           column_clues=[col1, col2])
+
+    shuffler.shuffle()
+    shuffler.draw(art)
 
     pixmap_differ.assert_equal()
