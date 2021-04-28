@@ -123,10 +123,10 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.word_clues_radio)
 
-        self.image_clues_radio = QRadioButton(self.groupBox)
-        self.image_clues_radio.setObjectName(u"image_clues_radio")
+        self.symbol_clues_radio = QRadioButton(self.groupBox)
+        self.symbol_clues_radio.setObjectName(u"symbol_clues_radio")
 
-        self.verticalLayout.addWidget(self.image_clues_radio)
+        self.verticalLayout.addWidget(self.symbol_clues_radio)
 
 
         self.gridLayout_4.addWidget(self.groupBox, 2, 1, 1, 1)
@@ -165,7 +165,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -209,7 +209,7 @@ class Ui_MainWindow(object):
         self.rows_label.setText(QCoreApplication.translate("MainWindow", u"Rows:", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Clue Type:", None))
         self.word_clues_radio.setText(QCoreApplication.translate("MainWindow", u"Words", None))
-        self.image_clues_radio.setText(QCoreApplication.translate("MainWindow", u"Symbols", None))
+        self.symbol_clues_radio.setText(QCoreApplication.translate("MainWindow", u"Symbols", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.options), QCoreApplication.translate("MainWindow", u"Options", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"&File", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"&View", None))

@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="art">
        <attribute name="title">
@@ -132,7 +132,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QRadioButton" name="image_clues_radio">
+            <widget class="QRadioButton" name="symbol_clues_radio">
              <property name="text">
               <string>Symbols</string>
              </property>

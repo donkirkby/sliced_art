@@ -38,31 +38,77 @@ class ArtShuffler:
         self.column_clues = [] if column_clues is None else list(column_clues)
 
     def draw_grid(self, art: QPixmap, painter: typing.Optional[QPainter] = None):
-        filled_portion = 0.84
+        rows = self.rows
+        columns = self.cols
+        if self.row_clues:
+            filled_portion = 0.99
+            rows += 1
+            columns += 1
+        else:
+            filled_portion = 0.84
         scaled_art = art.scaled(self.rect.width()*filled_portion,
                                 self.rect.height()*filled_portion,
                                 Qt.AspectRatioMode.KeepAspectRatio)
-        cell_height = scaled_art.height() / self.rows
-        cell_width = scaled_art.width() / self.cols
-        left_border = (self.rect.width()-scaled_art.width()) / 2
-        top_border = (self.rect.height()-scaled_art.height()) / 2
+        cell_height = scaled_art.height() / rows
+        cell_width = scaled_art.width() / columns
+        left_border = int((self.rect.width()-scaled_art.width()) / 2)
+        top_border = int((self.rect.height()-scaled_art.height()) / 2)
         if painter is None:
             painter = QPainter(self.target)
+        painter.fillRect(self.rect, QColor('white'))
+        painter.translate(0, self.rect.top())
+        if not self.row_clues:
+            self.draw_letters(cell_width,
+                              cell_height,
+                              left_border,
+                              top_border,
+                              painter)
+        for i, clue in enumerate(self.row_clues, 1):
+            y = round(top_border + i*cell_height)
+            x = left_border
+            painter.drawPixmap(x, y,
+                               round(cell_width), round(cell_height),
+                               clue)
+        for j, clue in enumerate(self.column_clues, 1):
+            x = round(left_border + j*cell_width)
+            y = top_border
+            painter.drawPixmap(x, y,
+                               round(cell_width), round(cell_height),
+                               clue)
+        pen = QPen(QColor('lightgrey'))
+        painter.setPen(pen)
+        for i in range(rows+1):
+            y = round(top_border + i*cell_height)
+            x = left_border
+            if self.row_clues and i == 0:
+                x += cell_width
+            painter.drawLine(x, y, left_border+scaled_art.width(), y)
+        for j in range(columns+1):
+            x = round(left_border + j*cell_width)
+            y = top_border
+            if self.row_clues and j == 0:
+                y += cell_height
+            painter.drawLine(x, y, x, top_border+scaled_art.height())
+        painter.translate(0, -self.rect.top())
+
+    def draw_letters(self,
+                     cell_width: float,
+                     cell_height: float,
+                     left_border: int,
+                     top_border: int,
+                     painter: QPainter):
         font = painter.font()
         font_size = round(top_border * 0.99)
         font.setPixelSize(font_size)
         painter.setFont(font)
-        print(f'font size: {font.pixelSize()}')
-        painter.fillRect(self.rect, QColor('white'))
-        painter.translate(0, self.rect.top())
         ascii_code = ord('A')
         for i in range(self.rows):
             for j in range(self.cols):
                 letter = chr(ascii_code)
-                x = left_border + j*cell_width
-                y = top_border + i*cell_height
-                w = cell_width
-                h = cell_height
+                x = round(left_border + j * cell_width)
+                y = round(top_border + i * cell_height)
+                w = round(cell_width)
+                h = round(cell_height)
                 if i == 0:
                     y = top_border - font_size
                     h = font_size
@@ -83,19 +129,6 @@ class ArtShuffler:
                                      Qt.AlignmentFlag.AlignCenter,
                                      letter)
                 ascii_code += 1
-        pen = QPen(QColor('lightgrey'))
-        painter.setPen(pen)
-        painter.drawRect(left_border,
-                         top_border,
-                         scaled_art.width(),
-                         scaled_art.height())
-        for i in range(1, self.rows):
-            y = top_border + i*cell_height
-            painter.drawLine(left_border, y, left_border+scaled_art.width(), y)
-        for j in range(1, self.cols):
-            x = left_border + j*cell_width
-            painter.drawLine(x, top_border, x, top_border+scaled_art.height())
-        painter.translate(0, -self.rect.top())
 
     def draw(self, art: QPixmap, painter: typing.Optional[QPainter] = None):
         filled_portion = 0.6 if self.is_shuffled and not self.row_clues else 0.9

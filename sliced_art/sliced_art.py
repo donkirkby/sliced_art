@@ -1,6 +1,7 @@
 import os
 import sys
 import typing
+from enum import Enum
 from functools import partial
 from pathlib import Path
 
@@ -20,6 +21,8 @@ QCoreApplication.setOrganizationDomain("donkirkby.github.io")
 QCoreApplication.setOrganizationName("Don Kirkby")
 QCoreApplication.setApplicationName("Sliced Art")
 
+ClueType = Enum('ClueType', 'words symbols')
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -36,8 +39,10 @@ class MainWindow(QMainWindow):
         self.ui.action_save_png.triggered.connect(self.save_png)
         self.ui.action_shuffle.triggered.connect(self.shuffle)
         self.ui.action_sort.triggered.connect(self.sort)
-        self.ui.rows.valueChanged.connect(self.on_size_changed)
-        self.ui.columns.valueChanged.connect(self.on_size_changed)
+        self.ui.rows.valueChanged.connect(self.on_options_changed)
+        self.ui.columns.valueChanged.connect(self.on_options_changed)
+        self.ui.word_clues_radio.toggled.connect(self.on_options_changed)
+        self.ui.symbol_clues_radio.toggled.connect(self.on_options_changed)
 
         self.word_layout = QGridLayout(self.ui.word_content)
         self.ui.word_scroll.setWidgetResizable(True)
@@ -64,9 +69,21 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.on_dirty)
 
         self.row_count = self.column_count = 0
+        self.clue_type = ClueType.words
         self.ui.rows.setValue(self.settings.value('row_count', 6, int))
         self.ui.columns.setValue(self.settings.value('column_count', 4, int))
-        self.on_size_changed()
+        clue_type_name = self.settings.value('clue_type', ClueType.words.name)
+        try:
+            clue_type = ClueType[clue_type_name]
+        except KeyError:
+            clue_type = ClueType.words
+        if clue_type == ClueType.words:
+            self.ui.word_clues_radio.setChecked(True)
+        else:
+            self.ui.symbol_clues_radio.setChecked(True)
+        self.row_clues: typing.List[QPixmap] = []
+        self.column_clues: typing.List[QPixmap] = []
+        self.on_options_changed()
 
     def on_dirty(self):
         for letter in self.dirty_letters:
@@ -88,11 +105,21 @@ class MainWindow(QMainWindow):
 
         new_rows = self.ui.rows.value()
         new_columns = self.ui.columns.value()
-        if (new_rows, new_columns) == (self.row_count, self.column_count):
+        if self.ui.word_clues_radio.isChecked():
+            new_clue_type = ClueType.words
+        else:
+            new_clue_type = ClueType.symbols
+        if (new_rows,
+            new_columns,
+            new_clue_type) == (self.row_count,
+                               self.column_count,
+                               self.clue_type):
             return
         self.settings.setValue('row_count', new_rows)
         self.settings.setValue('column_count', new_columns)
+        self.settings.setValue('clue_type', new_clue_type.name)
         self.row_count, self.column_count = new_rows, new_columns
+        self.clue_type = new_clue_type
 
         word_count = (self.row_count * self.column_count)
         while self.word_layout.count():
@@ -100,8 +127,27 @@ class MainWindow(QMainWindow):
             layout_item.widget().deleteLater()
         self.word_labels.clear()
 
+        self.row_clues.clear()
+        self.column_clues.clear()
         if self.image_path is not None:
+            image_folder = Path(self.image_path).parent
+            if new_clue_type == ClueType.symbols:
+                for i in range(new_rows):
+                    clue_path = image_folder / f'row{i}.png'
+                    clue_image = QPixmap(str(clue_path))
+                    if not clue_image.isNull():
+                        self.row_clues.append(clue_image)
+                for j in range(new_columns):
+                    clue_path = image_folder / f'col{j}.png'
+                    clue_image = QPixmap(str(clue_path))
+                    if not clue_image.isNull():
+                        self.column_clues.append(clue_image)
+                if (len(self.row_clues) != new_rows or
+                        len(self.column_clues) != new_columns):
+                    self.row_clues.clear()
+                    self.column_clues.clear()
             self.load_image(self.image_path)
+
         if self.words_path is not None:
             self.load_words(self.words_path)
 
@@ -125,7 +171,7 @@ class MainWindow(QMainWindow):
             self.dirty_letters.add(letter)
             word_fields[letter].setText(word)
 
-    def on_size_changed(self, *_):
+    def on_options_changed(self, *_):
         self.timer.start()
 
     def shuffle(self):
@@ -149,8 +195,7 @@ class MainWindow(QMainWindow):
             self,
             "Open a words file.",
             dir=words_folder,
-            filter=word_filter,
-            options=QFileDialog.DontUseNativeDialog)
+            filter=word_filter)
         if not file_name:
             return
         self.settings.setValue('words_path', file_name)
@@ -176,8 +221,7 @@ class MainWindow(QMainWindow):
             self,
             "Open an image file.",
             dir=image_folder,
-            filter=image_filter,
-            options=QFileDialog.DontUseNativeDialog)
+            filter=image_filter)
         if not file_name:
             return
         self.settings.setValue('image_path', file_name)
@@ -231,7 +275,9 @@ class MainWindow(QMainWindow):
                                               0,
                                               display_size.width(),
                                               display_size.height()),
-                                        clues=self.clues)
+                                        clues=self.clues,
+                                        row_clues=self.row_clues,
+                                        column_clues=self.column_clues)
         self.sliced_pixmap_item = self.scene.addPixmap(
             QPixmap.fromImage(self.sliced_image))
         self.sliced_pixmap_item.setPos(display_size.width(), 0)
@@ -276,8 +322,7 @@ class MainWindow(QMainWindow):
             self,
             "Save a PDF file.",
             dir=pdf_folder,
-            filter='Documents (*.pdf)',
-            options=QFileDialog.DontUseNativeDialog)
+            filter='Documents (*.pdf)')
         if not file_name:
             return
         self.settings.setValue('pdf_folder', os.path.dirname(file_name))
@@ -293,8 +338,7 @@ class MainWindow(QMainWindow):
             self,
             "Save an image file.",
             dir=pdf_folder,
-            filter='Images (*.png)',
-            options=QFileDialog.DontUseNativeDialog)
+            filter='Images (*.png)')
         if not file_name:
             return
         writer = QPixmap(1000, 2000)
@@ -310,8 +354,11 @@ class MainWindow(QMainWindow):
                                          self.art_shuffler.cols,
                                          writer,
                                          QRect(0, 0,
-                                               writer.width(), writer.height()/2),
-                                         clues=self.clues)
+                                               writer.width(),
+                                               round(writer.height()/2)),
+                                         clues=self.clues,
+                                         row_clues=self.row_clues,
+                                         column_clues=self.column_clues)
             print_shuffler.cells = self.art_shuffler.cells[:]
             print_shuffler.is_shuffled = self.art_shuffler.is_shuffled
             selected_pixmap = self.get_selected_pixmap()
@@ -323,8 +370,13 @@ class MainWindow(QMainWindow):
             painter.end()
 
     def check_clues(self):
-        if self.clues is None:
-            self.clues = self.word_shuffler.make_clues()
+        if self.clue_type == ClueType.words:
+            if self.clues is None:
+                self.clues = self.word_shuffler.make_clues()
+            self.row_clues.clear()
+            self.column_clues.clear()
+        else:
+            self.clues = None
 
 
 def main():
