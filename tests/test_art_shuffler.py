@@ -404,21 +404,21 @@ def test_draw_grid_with_symbols(pixmap_differ, symbol_clues, monkeypatch):
     actual, expected = pixmap_differ.start(
         180, 180,
         'test_art_shuffler_draw_grid_with_symbols')
-    expected.drawPixmap(60, 1, 59, 59, column_clues[0])
-    expected.drawPixmap(120, 1, 59, 59, column_clues[1])
-    expected.drawPixmap(1, 60, 59, 59, row_clues[0])
-    expected.drawPixmap(1, 120, 59, 59, row_clues[1])
+    expected.drawPixmap(62, 2, 58, 58, column_clues[0])
+    expected.drawPixmap(120, 2, 58, 58, column_clues[1])
+    expected.drawPixmap(2, 62, 58, 58, row_clues[0])
+    expected.drawPixmap(2, 120, 58, 58, row_clues[1])
     grey_pen = QPen(QColor('lightgrey'))
     expected.setPen(grey_pen)
 
-    expected.drawLine(60, 1, 179, 1)
-    expected.drawLine(1, 60, 179, 60)
-    expected.drawLine(1, 120, 179, 120)
-    expected.drawLine(1, 179, 179, 179)
-    expected.drawLine(1, 60, 1, 179)
-    expected.drawLine(60, 1, 60, 179)
-    expected.drawLine(120, 1, 120, 179)
-    expected.drawLine(179, 1, 179, 179)
+    expected.drawRect(62, 2, 116, 58)
+    expected.drawRect(62, 62, 116, 116)
+    expected.drawRect(2, 62, 58, 116)
+
+    expected.drawLine(120, 2, 120, 60)
+    expected.drawLine(120, 62, 120, 178)
+    expected.drawLine(62, 120, 178, 120)
+    expected.drawLine(2, 120, 60, 120)
 
     actual.end()
     shuffler = ArtShuffler(2,

@@ -41,18 +41,34 @@ class ArtShuffler:
         rows = self.rows
         columns = self.cols
         if self.row_clues:
-            filled_portion = 0.99
-            rows += 1
-            columns += 1
+            x_filled_portion = 0.97 * rows / (rows+1)
+            y_filled_portion = 0.97 * columns / (columns+1)
+            scaled_art = art.scaled(self.rect.width()*x_filled_portion,
+                                    self.rect.height()*y_filled_portion,
+                                    Qt.AspectRatioMode.KeepAspectRatio)
         else:
             filled_portion = 0.84
-        scaled_art = art.scaled(self.rect.width()*filled_portion,
-                                self.rect.height()*filled_portion,
-                                Qt.AspectRatioMode.KeepAspectRatio)
+            scaled_art = art.scaled(self.rect.width()*filled_portion,
+                                    self.rect.height()*filled_portion,
+                                    Qt.AspectRatioMode.KeepAspectRatio)
         cell_height = scaled_art.height() / rows
         cell_width = scaled_art.width() / columns
-        left_border = int((self.rect.width()-scaled_art.width()) / 2)
-        top_border = int((self.rect.height()-scaled_art.height()) / 2)
+        if self.row_clues:
+            left_clue_border = round((self.rect.width() -
+                                      scaled_art.width() -
+                                      cell_width) / 3)
+            top_clue_border = round((self.rect.height() -
+                                     scaled_art.height() -
+                                     cell_height) / 3)
+            min_border = min(left_clue_border, top_clue_border)
+            left_clue_border = round((3*left_clue_border - min_border) / 2)
+            top_clue_border = round((3*top_clue_border - min_border) / 2)
+            left_border = left_clue_border + cell_width + min_border
+            top_border = top_clue_border + cell_height + min_border
+        else:
+            left_border = int((self.rect.width()-scaled_art.width()) / 2)
+            top_border = int((self.rect.height()-scaled_art.height()) / 2)
+            left_clue_border = top_clue_border = None
         if painter is None:
             painter = QPainter(self.target)
         painter.fillRect(self.rect, QColor('white'))
@@ -63,32 +79,43 @@ class ArtShuffler:
                               left_border,
                               top_border,
                               painter)
-        for i, clue in enumerate(self.row_clues, 1):
+        for i, clue in enumerate(self.row_clues):
             y = round(top_border + i*cell_height)
-            x = left_border
+            x = left_clue_border
             painter.drawPixmap(x, y,
                                round(cell_width), round(cell_height),
                                clue)
-        for j, clue in enumerate(self.column_clues, 1):
+        for j, clue in enumerate(self.column_clues):
             x = round(left_border + j*cell_width)
-            y = top_border
+            y = top_clue_border
             painter.drawPixmap(x, y,
                                round(cell_width), round(cell_height),
                                clue)
-        pen = QPen(QColor('lightgrey'))
+        pen = QPen(QColor('lightgrey'), round(cell_width/50))
         painter.setPen(pen)
-        for i in range(rows+1):
+        if self.row_clues:
+            painter.drawRect(left_clue_border, top_border,
+                             round(cell_width), round(cell_height * rows))
+            painter.drawRect(left_border, top_clue_border,
+                             round(cell_width*columns), round(cell_height))
+        painter.drawRect(left_border, top_border,
+                         round(cell_width * columns),
+                         round(cell_height * rows))
+        for i in range(1, rows):
             y = round(top_border + i*cell_height)
-            x = left_border
-            if self.row_clues and i == 0:
-                x += cell_width
-            painter.drawLine(x, y, left_border+scaled_art.width(), y)
-        for j in range(columns+1):
+            painter.drawLine(left_border, y,
+                             round(left_border + cell_width*columns), y)
+            if self.row_clues:
+                painter.drawLine(left_clue_border, y,
+                                 round(left_clue_border + cell_width), y)
+        for j in range(1, columns):
             x = round(left_border + j*cell_width)
-            y = top_border
-            if self.row_clues and j == 0:
-                y += cell_height
-            painter.drawLine(x, y, x, top_border+scaled_art.height())
+            painter.drawLine(
+                x, top_border,
+                x, round(top_border + cell_height*rows))
+            if self.row_clues:
+                painter.drawLine(x, top_clue_border,
+                                 x, round(top_clue_border + cell_height))
         painter.translate(0, -self.rect.top())
 
     def draw_letters(self,
