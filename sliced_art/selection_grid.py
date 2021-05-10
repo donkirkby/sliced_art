@@ -40,10 +40,11 @@ class SelectionGrid(QGraphicsRectItem):
         self.setAcceptHoverEvents(True)
         self.setFlag(QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
-        self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
-        self.setFlag(QGraphicsItem.ItemIsFocusable, True)
         self.row_count, self.column_count = row_count, column_count
+
+        # Callback method for when this is moved.
         self.on_moved = lambda: None
+
         self.update_handle_positions()
 
     def handle_at(self, point):
@@ -84,20 +85,97 @@ class SelectionGrid(QGraphicsRectItem):
         Executed when the mouse is pressed on the item.
         """
         self.selected_handle = self.handle_at(event.pos())
-        if self.selected_handle:
-            self.mouse_press_pos = event.pos()
-            self.mouse_press_rect = self.boundingRect()
+        self.mouse_press_pos = event.pos()
+        self.mouse_press_rect = self.boundingRect()
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        """
-        Executed when the mouse is being moved over the item while being pressed.
-        """
-        if self.selected_handle is not None:
-            self.interactive_resize(event.pos())
-        else:
-            super().mouseMoveEvent(event)
-            self.on_moved()
+        """ Continue tracking movement while the mouse is pressed. """
+        rect = self.drag_rect(event.pos())
+        self.check_bounds(rect)
+        self.setRect(rect)
+
+        self.update_handle_positions()
+        self.on_moved()
+
+    def check_bounds(self, rect):
+        # Figure out the limits of movement. I did it by updating the scene's
+        # rect after the window resizes.
+        scene_rect = self.scene().sceneRect()
+        view_left = scene_rect.left()
+        view_top = scene_rect.top()
+        view_right = scene_rect.right()/2
+        view_bottom = scene_rect.bottom()
+
+        # Next, check if the rectangle has been dragged out of bounds.
+        if rect.top() < view_top:
+            if self.selected_handle is None:
+                rect.translate(0, view_top - rect.top())
+            else:
+                rect.setTop(view_top)
+        if rect.left() < view_left:
+            if self.selected_handle is None:
+                rect.translate(view_left - rect.left(), 0)
+            else:
+                rect.setLeft(view_left)
+        if view_bottom < rect.bottom():
+            if self.selected_handle is None:
+                rect.translate(0, view_bottom - rect.bottom())
+            else:
+                rect.setBottom(view_bottom)
+        if view_right < rect.right():
+            if self.selected_handle is None:
+                rect.translate(view_right - rect.right(), 0)
+            else:
+                rect.setRight(view_right)
+
+        # Also check if the rectangle has been dragged inside out.
+        if rect.width() < self.HANDLE_SIZE:
+            if self.selected_handle in (self.HANDLE_TOP_LEFT,
+                                        self.HANDLE_LEFT,
+                                        self.HANDLE_BOTTOM_LEFT):
+                rect.setLeft(rect.right() - self.HANDLE_SIZE)
+            else:
+                rect.setRight(rect.left() + self.HANDLE_SIZE)
+        if rect.height() < self.HANDLE_SIZE:
+            if self.selected_handle in (self.HANDLE_TOP_LEFT,
+                                        self.HANDLE_TOP,
+                                        self.HANDLE_TOP_RIGHT):
+                rect.setTop(rect.bottom() - self.HANDLE_SIZE)
+            else:
+                rect.setBottom(rect.top() + self.HANDLE_SIZE)
+
+    def drag_rect(self, pos):
+        # Calculate how much the mouse has moved since the click.
+        x_diff = pos.x() - self.mouse_press_pos.x()
+        y_diff = pos.y() - self.mouse_press_pos.y()
+
+        # Start with the rectangle as it was when clicked.
+        rect = QRectF(self.mouse_press_rect)
+
+        # Then adjust by the distance the mouse moved.
+        if self.selected_handle is None:
+            rect.translate(x_diff, y_diff)
+        elif self.selected_handle == self.HANDLE_TOP_LEFT:
+            rect.adjust(x_diff, y_diff, 0, 0)
+        elif self.selected_handle == self.HANDLE_TOP:
+            rect.setTop(rect.top() + y_diff)
+        elif self.selected_handle == self.HANDLE_TOP_RIGHT:
+            rect.setTop(rect.top() + y_diff)
+            rect.setRight(rect.right() + x_diff)
+        elif self.selected_handle == self.HANDLE_LEFT:
+            rect.setLeft(rect.left() + x_diff)
+        elif self.selected_handle == self.HANDLE_RIGHT:
+            rect.setRight(rect.right() + x_diff)
+        elif self.selected_handle == self.HANDLE_BOTTOM_LEFT:
+            rect.setBottom(rect.bottom() + y_diff)
+            rect.setLeft(rect.left() + x_diff)
+        elif self.selected_handle == self.HANDLE_BOTTOM:
+            rect.setBottom(rect.bottom() + y_diff)
+        elif self.selected_handle == self.HANDLE_BOTTOM_RIGHT:
+            rect.setBottom(rect.bottom() + y_diff)
+            rect.setRight(rect.right() + x_diff)
+        return rect
 
     def mouseReleaseEvent(self, event):
         """
@@ -140,68 +218,6 @@ class SelectionGrid(QGraphicsRectItem):
         self.handles[self.HANDLE_BOTTOM_RIGHT] = QRectF(
             b.right() - s, b.bottom() - s, s, s
         )
-
-    def adjust_left(self, mouse_pos):
-        rect = self.rect()
-        rect.setLeft(
-            self.mouse_press_rect.left() +
-            mouse_pos.x() - self.mouse_press_pos.x() +
-            self.HANDLE_SIZE + self.HANDLE_SPACE)
-        self.setRect(rect)
-
-    def adjust_right(self, mouse_pos):
-        rect = self.rect()
-        rect.setRight(
-            self.mouse_press_rect.right() +
-            mouse_pos.x() - self.mouse_press_pos.x() -
-            self.HANDLE_SIZE - self.HANDLE_SPACE)
-        self.setRect(rect)
-
-    def adjust_top(self, mouse_pos):
-        rect = self.rect()
-        rect.setTop(
-            self.mouse_press_rect.top() +
-            mouse_pos.y() - self.mouse_press_pos.y() +
-            self.HANDLE_SIZE + self.HANDLE_SPACE)
-        self.setRect(rect)
-
-    def adjust_bottom(self, mouse_pos):
-        rect = self.rect()
-        rect.setBottom(
-            self.mouse_press_rect.bottom() +
-            mouse_pos.y() - self.mouse_press_pos.y() -
-            self.HANDLE_SIZE - self.HANDLE_SPACE)
-        self.setRect(rect)
-
-    def interactive_resize(self, mouse_pos):
-        """
-        Perform shape interactive resize.
-        """
-        self.prepareGeometryChange()
-
-        if self.selected_handle == self.HANDLE_TOP_LEFT:
-            self.adjust_top(mouse_pos)
-            self.adjust_left(mouse_pos)
-        elif self.selected_handle == self.HANDLE_TOP:
-            self.adjust_top(mouse_pos)
-        elif self.selected_handle == self.HANDLE_TOP_RIGHT:
-            self.adjust_top(mouse_pos)
-            self.adjust_right(mouse_pos)
-        elif self.selected_handle == self.HANDLE_LEFT:
-            self.adjust_left(mouse_pos)
-        elif self.selected_handle == self.HANDLE_RIGHT:
-            self.adjust_right(mouse_pos)
-        elif self.selected_handle == self.HANDLE_BOTTOM_LEFT:
-            self.adjust_left(mouse_pos)
-            self.adjust_bottom(mouse_pos)
-        elif self.selected_handle == self.HANDLE_BOTTOM:
-            self.adjust_bottom(mouse_pos)
-        elif self.selected_handle == self.HANDLE_BOTTOM_RIGHT:
-            self.adjust_bottom(mouse_pos)
-            self.adjust_right(mouse_pos)
-
-        self.update_handle_positions()
-        self.on_moved()
 
     def shape(self):
         """

@@ -47,10 +47,10 @@ class Ui_MainWindow(object):
         self.art.setObjectName(u"art")
         self.gridLayout_3 = QGridLayout(self.art)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
-        self.graphics_view = QGraphicsView(self.art)
-        self.graphics_view.setObjectName(u"graphics_view")
+        self.art_view = QGraphicsView(self.art)
+        self.art_view.setObjectName(u"art_view")
 
-        self.gridLayout_3.addWidget(self.graphics_view, 0, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.art_view, 0, 0, 1, 1)
 
         self.tabWidget.addTab(self.art, "")
         self.words = QWidget()
@@ -72,10 +72,10 @@ class Ui_MainWindow(object):
         self.symbols.setObjectName(u"symbols")
         self.verticalLayout_2 = QVBoxLayout(self.symbols)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.graphicsView = QGraphicsView(self.symbols)
-        self.graphicsView.setObjectName(u"graphicsView")
+        self.symbols_view = QGraphicsView(self.symbols)
+        self.symbols_view.setObjectName(u"symbols_view")
 
-        self.verticalLayout_2.addWidget(self.graphicsView)
+        self.verticalLayout_2.addWidget(self.symbols_view)
 
         self.tabWidget.addTab(self.symbols, "")
         self.options = QWidget()

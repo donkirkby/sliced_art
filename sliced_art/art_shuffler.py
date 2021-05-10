@@ -36,6 +36,8 @@ class ArtShuffler:
         self.clues = clues or {}
         self.row_clues = [] if row_clues is None else list(row_clues)
         self.column_clues = [] if column_clues is None else list(column_clues)
+        self.background = QColor('white')
+        self.selected_row = self.selected_column = None
 
     def draw_grid(self, art: QPixmap, painter: typing.Optional[QPainter] = None):
         rows = self.rows
@@ -71,7 +73,8 @@ class ArtShuffler:
             left_clue_border = top_clue_border = None
         if painter is None:
             painter = QPainter(self.target)
-        painter.fillRect(self.rect, QColor('white'))
+        if self.background:
+            painter.fillRect(self.rect, self.background)
         painter.translate(0, self.rect.top())
         if not self.row_clues:
             self.draw_letters(cell_width,
@@ -79,20 +82,38 @@ class ArtShuffler:
                               left_border,
                               top_border,
                               painter)
+        is_grid_filled = (self.selected_row is not None or
+                          self.selected_column is not None)
         for i, clue in enumerate(self.row_clues):
-            y = round(top_border + i*cell_height)
-            x = left_clue_border
-            painter.drawPixmap(x, y,
-                               round(cell_width), round(cell_height),
+            painter.drawPixmap(left_clue_border,
+                               round(top_border + i * cell_height),
+                               round(cell_width),
+                               round(cell_height),
                                clue)
+            if is_grid_filled:
+                for j in range(self.cols):
+                    painter.drawPixmap(round(left_border + j * cell_width), round(top_border + i * cell_height),
+                                       round(cell_width), round(cell_height),
+                                       clue)
         for j, clue in enumerate(self.column_clues):
-            x = round(left_border + j*cell_width)
-            y = top_clue_border
-            painter.drawPixmap(x, y,
-                               round(cell_width), round(cell_height),
+            painter.drawPixmap(round(left_border + j * cell_width),
+                               top_clue_border,
+                               round(cell_width),
+                               round(cell_height),
                                clue)
-        pen = QPen(QColor('lightgrey'), round(cell_width/50))
-        painter.setPen(pen)
+            if is_grid_filled:
+                for i in range(self.rows):
+                    y = round(top_border + i*cell_height)
+                    painter.drawPixmap(round(left_border + j * cell_width), y,
+                                       round(cell_width), round(cell_height),
+                                       clue)
+        if is_grid_filled:
+            painter.drawPixmap(left_border,
+                               top_border,
+                               round(self.rows*cell_width),
+                               round(self.cols*cell_height),
+                               art)
+        painter.setPen(QPen(QColor('lightgrey'), round(cell_width / 50)))
         if self.row_clues:
             painter.drawRect(left_clue_border, top_border,
                              round(cell_width), round(cell_height * rows))
@@ -116,6 +137,16 @@ class ArtShuffler:
             if self.row_clues:
                 painter.drawLine(x, top_clue_border,
                                  x, round(top_clue_border + cell_height))
+
+        painter.setPen(QPen(QColor('blue'), round(cell_width / 25)))
+        if self.selected_row is not None:
+            painter.drawRect(left_clue_border,
+                             round(top_border + cell_height*self.selected_row),
+                             round(cell_width), round(cell_height))
+        if self.selected_column is not None:
+            painter.drawRect(top_clue_border,
+                             round(left_border + cell_width*self.selected_column),
+                             round(cell_width), round(cell_height))
         painter.translate(0, -self.rect.top())
 
     def draw_letters(self,

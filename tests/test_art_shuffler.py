@@ -386,18 +386,8 @@ def test_symbols(pixmap_differ, symbol_clues, monkeypatch):
 
 
 # noinspection DuplicatedCode
-def test_draw_grid_with_symbols(pixmap_differ, symbol_clues, monkeypatch):
-    monkeypatch.setattr('sliced_art.art_shuffler.shuffle',
-                        lambda a: a.reverse())
-
-    transparent = QColor(255, 255, 255, 0)
-    blue = QColor('blue')
-
-    art = QPixmap(900, 900)
-    art.fill(transparent)
-    painter = QPainter(art)
-    painter.setBrush(QBrush(blue))
-    painter.end()
+def test_draw_grid_with_symbols(pixmap_differ, symbol_clues):
+    art = QPixmap(900, 900)  # Only shape matters.
 
     row_clues, column_clues = symbol_clues
 
@@ -429,5 +419,60 @@ def test_draw_grid_with_symbols(pixmap_differ, symbol_clues, monkeypatch):
 
     shuffler.shuffle()
     shuffler.draw_grid(art)
+
+    pixmap_differ.assert_equal()
+
+
+# noinspection DuplicatedCode
+def test_draw_grid_with_selected_row(pixmap_differ, symbol_clues):
+    transparent = QColor(255, 255, 255, 0)
+    art = QPixmap(900, 900)
+    art.fill(transparent)
+    painter = QPainter(art)
+    painter.setBrush(QBrush(QColor('green')))
+    painter.drawEllipse(0, 0, 900, 900)
+    painter.end()
+
+    row_clues, column_clues = symbol_clues
+
+    actual, expected = pixmap_differ.start(
+        180, 180,
+        'test_art_shuffler_draw_grid_with_selected_row')
+    expected.drawPixmap(62, 62, 58, 58, row_clues[0])
+    expected.drawPixmap(62, 62, 58, 58, column_clues[0])
+    expected.drawPixmap(120, 62, 58, 58, row_clues[0])
+    expected.drawPixmap(120, 62, 58, 58, column_clues[1])
+    expected.drawPixmap(62, 120, 58, 58, row_clues[1])
+    expected.drawPixmap(62, 120, 58, 58, column_clues[0])
+    expected.drawPixmap(120, 120, 58, 58, row_clues[1])
+    expected.drawPixmap(120, 120, 58, 58, column_clues[1])
+    expected.drawPixmap(62, 62, 116, 116,
+                        art,
+                        0, 0, 900, 900)
+    expected.end()
+
+    shuffler1 = ArtShuffler(2,
+                            2,
+                            expected.device(),
+                            row_clues=row_clues,
+                            column_clues=column_clues)
+    shuffler1.background = None
+    shuffler1.draw_grid(art)
+
+    expected.begin(expected.device())
+    blue_pen = QPen(QColor('blue'))
+    blue_pen.setWidth(2)
+    expected.setPen(blue_pen)
+    expected.drawRect(2, 120, 58, 58)
+
+    actual.end()
+    shuffler2 = ArtShuffler(2,
+                            2,
+                            actual.device(),
+                            row_clues=row_clues,
+                            column_clues=column_clues)
+
+    shuffler2.selected_row = 1
+    shuffler2.draw_grid(art)
 
     pixmap_differ.assert_equal()

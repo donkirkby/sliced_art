@@ -29,9 +29,11 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.scene = QGraphicsScene(self)
-        self.scene.addText('Open an image file.')
-        self.ui.graphics_view.setScene(self.scene)
+        self.art_scene = QGraphicsScene(self)
+        self.art_scene.addText('Open an image file.')
+        self.ui.art_view.setScene(self.art_scene)
+        self.symbols_scene = QGraphicsScene(self)
+        self.ui.symbols_view.setScene(self.symbols_scene)
         self.ui.action_exit.triggered.connect(self.close)
         self.ui.action_open_art.triggered.connect(self.open_image)
         self.ui.action_open_words.triggered.connect(self.open_words)
@@ -57,6 +59,7 @@ class MainWindow(QMainWindow):
         self.selection_grid: typing.Optional[SelectionGrid] = None
         self.cells = []
         self.art_shuffler: typing.Optional[ArtShuffler] = None
+        self.symbols_shuffler: typing.Optional[ArtShuffler] = None
         self.settings = QSettings()
         self.image_path: typing.Optional[str] = self.settings.value('image_path')
         self.words_path: typing.Optional[str] = self.settings.value('words_path')
@@ -245,17 +248,18 @@ class MainWindow(QMainWindow):
             height = self.settings.value('height', 1.0, float)
         else:
             x, y, width, height = self.get_selected_fraction()
-        self.scene.clear()
+        self.art_scene.clear()
         self.cells.clear()
-        view_size = self.ui.graphics_view.maximumViewportSize()
+        view_size = self.ui.art_view.maximumViewportSize()
         if view_size.width() == 0:
             return
+        self.art_scene.setSceneRect(0, 0, view_size.width(), view_size.height())
         display_size = QSize(view_size.width() * 0.99 / 2,
                              view_size.height() * 0.99)
         self.scaled_pixmap = self.pixmap.scaled(
             display_size,
             aspectMode=Qt.AspectRatioMode.KeepAspectRatio)
-        self.scene.addPixmap(self.scaled_pixmap)
+        self.art_scene.addPixmap(self.scaled_pixmap)
         scaled_size = self.scaled_pixmap.size()
         self.selection_grid = SelectionGrid(scaled_size.width()*x,
                                             scaled_size.height()*y,
@@ -264,7 +268,7 @@ class MainWindow(QMainWindow):
                                             row_count=self.row_count,
                                             column_count=self.column_count)
         self.selection_grid.on_moved = self.on_selection_moved
-        self.scene.addItem(self.selection_grid)
+        self.art_scene.addItem(self.selection_grid)
         self.sliced_image = QImage(display_size,
                                    QImage.Format.Format_ARGB32_Premultiplied)
         self.check_clues()
@@ -278,9 +282,12 @@ class MainWindow(QMainWindow):
                                         clues=self.clues,
                                         row_clues=self.row_clues,
                                         column_clues=self.column_clues)
-        self.sliced_pixmap_item = self.scene.addPixmap(
+        self.sliced_pixmap_item = self.art_scene.addPixmap(
             QPixmap.fromImage(self.sliced_image))
         self.sliced_pixmap_item.setPos(display_size.width(), 0)
+
+        self.symbols_scene.clear()
+
         self.on_selection_moved()
 
     def on_word_edited(self, letter, word):
