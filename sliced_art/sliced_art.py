@@ -9,9 +9,10 @@ from PySide6.QtCore import Qt, QSize, QSettings, QCoreApplication, QRect, QTimer
 from PySide6.QtGui import QImageReader, QPixmap, QResizeEvent, QPdfWriter, \
     QPainter, QImage, QPaintDevice, QPageSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QGraphicsScene, \
-    QFileDialog, QGraphicsPixmapItem, QLabel, QGridLayout, QLineEdit
+    QFileDialog, QGraphicsPixmapItem, QLabel, QGridLayout, QLineEdit, QGraphicsSceneMouseEvent
 
 from sliced_art.art_shuffler import ArtShuffler
+from sliced_art.clickable_pixmap_item import ClickablePixmapItem
 from sliced_art.main_window import Ui_MainWindow
 from sliced_art.selection_grid import SelectionGrid
 from sliced_art.word_shuffler import WordShuffler
@@ -59,7 +60,12 @@ class MainWindow(QMainWindow):
         self.selection_grid: typing.Optional[SelectionGrid] = None
         self.cells = []
         self.art_shuffler: typing.Optional[ArtShuffler] = None
+        self.symbols_source_pixmap_item: typing.Optional[QGraphicsPixmapItem] = None
+        self.symbols_pixmap_item: typing.Optional[QGraphicsPixmapItem] = None
+        self.symbols_image: typing.Optional[QImage] = None
         self.symbols_shuffler: typing.Optional[ArtShuffler] = None
+        self.selected_row: typing.Optional[int] = None
+        self.selected_column: typing.Optional[int] = None
         self.settings = QSettings()
         self.image_path: typing.Optional[str] = self.settings.value('image_path')
         self.words_path: typing.Optional[str] = self.settings.value('words_path')
@@ -133,22 +139,6 @@ class MainWindow(QMainWindow):
         self.row_clues.clear()
         self.column_clues.clear()
         if self.image_path is not None:
-            image_folder = Path(self.image_path).parent
-            if new_clue_type == ClueType.symbols:
-                for i in range(new_rows):
-                    clue_path = image_folder / f'row{i}.png'
-                    clue_image = QPixmap(str(clue_path))
-                    if not clue_image.isNull():
-                        self.row_clues.append(clue_image)
-                for j in range(new_columns):
-                    clue_path = image_folder / f'col{j}.png'
-                    clue_image = QPixmap(str(clue_path))
-                    if not clue_image.isNull():
-                        self.column_clues.append(clue_image)
-                if (len(self.row_clues) != new_rows or
-                        len(self.column_clues) != new_columns):
-                    self.row_clues.clear()
-                    self.column_clues.clear()
             self.load_image(self.image_path)
 
         if self.words_path is not None:
@@ -287,7 +277,39 @@ class MainWindow(QMainWindow):
         self.sliced_pixmap_item.setPos(display_size.width(), 0)
 
         self.symbols_scene.clear()
+        self.symbols_source_pixmap_item = self.symbols_scene.addPixmap(
+            self.scaled_pixmap)
+        self.symbols_image = QImage(display_size,
+                                    QImage.Format.Format_ARGB32_Premultiplied)
+        if self.symbols_shuffler is not None:
+            selected_row = self.symbols_shuffler.selected_row
+            selected_column = self.symbols_shuffler.selected_column
+        else:
+            selected_row = 0
+            selected_column = None
+        self.symbols_shuffler = ArtShuffler(self.selection_grid.row_count,
+                                            self.selection_grid.column_count,
+                                            self.symbols_image,
+                                            QRect(0,
+                                                  0,
+                                                  display_size.width(),
+                                                  display_size.height()),
+                                            row_clues=self.row_clues,
+                                            column_clues=self.column_clues)
+        self.symbols_shuffler.selected_row = selected_row
+        self.symbols_shuffler.selected_column = selected_column
+        self.symbols_pixmap_item = ClickablePixmapItem(
+            QPixmap.fromImage(self.symbols_image))
+        self.symbols_pixmap_item.on_click = self.on_symbols_clicked
+        self.symbols_scene.addItem(self.symbols_pixmap_item)
 
+        self.symbols_pixmap_item.setPos(display_size.width(), 0)
+
+        self.on_selection_moved()
+
+    def on_symbols_clicked(self, event: QGraphicsSceneMouseEvent):
+        self.symbols_scene.clearSelection()
+        self.symbols_shuffler.select_clue(event.pos().toPoint())
         self.on_selection_moved()
 
     def on_word_edited(self, letter, word):
@@ -306,8 +328,30 @@ class MainWindow(QMainWindow):
         return x, y, width, height
 
     def on_selection_moved(self):
-        self.art_shuffler.draw(self.get_selected_pixmap())
+        selected_pixmap = self.get_selected_pixmap()
+        self.art_shuffler.draw(selected_pixmap)
         self.sliced_pixmap_item.setPixmap(QPixmap.fromImage(self.sliced_image))
+
+        selected_pixmap = self.get_selected_pixmap()
+        cell_width = (selected_pixmap.width() /
+                      self.selection_grid.column_count)
+        cell_height = (selected_pixmap.height() /
+                       self.selection_grid.row_count)
+        self.row_clues.clear()
+        self.column_clues.clear()
+        for i in range(self.selection_grid.row_count):
+            clue_image = selected_pixmap.copy(0, i*cell_height,
+                                              cell_width, cell_height)
+            self.row_clues.append(clue_image)
+        for j in range(self.selection_grid.column_count):
+            clue_image = selected_pixmap.copy(j*cell_width, 0,
+                                              cell_width, cell_height)
+            self.column_clues.append(clue_image)
+        self.symbols_shuffler.row_clues = self.row_clues
+        self.symbols_shuffler.column_clues = self.column_clues
+
+        self.symbols_shuffler.draw_grid(selected_pixmap)
+        self.symbols_pixmap_item.setPixmap(QPixmap.fromImage(self.symbols_image))
         self.timer.start()
 
     def get_selected_pixmap(self) -> QPixmap:

@@ -1,7 +1,7 @@
 import typing
 from random import shuffle
 
-from PySide6.QtCore import QRect, Qt
+from PySide6.QtCore import QRect, Qt, QPoint
 from PySide6.QtGui import QPainter, QPaintDevice, QPixmap, QColor, QPen
 
 
@@ -36,6 +36,8 @@ class ArtShuffler:
         self.clues = clues or {}
         self.row_clues = [] if row_clues is None else list(row_clues)
         self.column_clues = [] if column_clues is None else list(column_clues)
+        self.row_clue_rects: typing.List[QRect] = []
+        self.column_clue_rects: typing.List[QRect] = []
         self.background = QColor('white')
         self.selected_row = self.selected_column = None
 
@@ -84,23 +86,27 @@ class ArtShuffler:
                               painter)
         is_grid_filled = (self.selected_row is not None or
                           self.selected_column is not None)
+        self.row_clue_rects.clear()
         for i, clue in enumerate(self.row_clues):
-            painter.drawPixmap(left_clue_border,
-                               round(top_border + i * cell_height),
-                               round(cell_width),
-                               round(cell_height),
-                               clue)
+            clue_rect = QRect(left_clue_border,
+                              round(top_border + i * cell_height),
+                              round(cell_width),
+                              round(cell_height))
+            self.row_clue_rects.append(clue_rect)
+            painter.drawPixmap(clue_rect, clue)
             if is_grid_filled:
                 for j in range(self.cols):
                     painter.drawPixmap(round(left_border + j * cell_width), round(top_border + i * cell_height),
                                        round(cell_width), round(cell_height),
                                        clue)
+        self.column_clue_rects.clear()
         for j, clue in enumerate(self.column_clues):
-            painter.drawPixmap(round(left_border + j * cell_width),
-                               top_clue_border,
-                               round(cell_width),
-                               round(cell_height),
-                               clue)
+            clue_rect = QRect(round(left_border + j * cell_width),
+                              top_clue_border,
+                              round(cell_width),
+                              round(cell_height))
+            self.column_clue_rects.append(clue_rect)
+            painter.drawPixmap(clue_rect, clue)
             if is_grid_filled:
                 for i in range(self.rows):
                     y = round(top_border + i*cell_height)
@@ -110,9 +116,9 @@ class ArtShuffler:
         if is_grid_filled:
             painter.drawPixmap(left_border,
                                top_border,
-                               round(self.rows*cell_width),
-                               round(self.cols*cell_height),
-                               art)
+                               round(self.cols*cell_width),
+                               round(self.rows*cell_height),
+                               scaled_art)
         painter.setPen(QPen(QColor('lightgrey'), round(cell_width / 50)))
         if self.row_clues:
             painter.drawRect(left_clue_border, top_border,
@@ -144,8 +150,8 @@ class ArtShuffler:
                              round(top_border + cell_height*self.selected_row),
                              round(cell_width), round(cell_height))
         if self.selected_column is not None:
-            painter.drawRect(top_clue_border,
-                             round(left_border + cell_width*self.selected_column),
+            painter.drawRect(round(left_border + cell_width*self.selected_column),
+                             top_clue_border,
                              round(cell_width), round(cell_height))
         painter.translate(0, -self.rect.top())
 
@@ -274,3 +280,16 @@ class ArtShuffler:
     def sort(self):
         self.cells.sort()
         self.is_shuffled = False
+
+    def select_clue(self, point: QPoint):
+        for i, clue_rect in enumerate(self.row_clue_rects):
+            if clue_rect.contains(point):
+                self.selected_row = i
+                self.selected_column = None
+                return
+
+        for j, clue_rect in enumerate(self.column_clue_rects):
+            if clue_rect.contains(point):
+                self.selected_row = None
+                self.selected_column = j
+                return

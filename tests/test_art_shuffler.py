@@ -1,4 +1,5 @@
 import pytest
+from PySide6.QtCore import QPoint
 from PySide6.QtGui import Qt, QPixmap, QPainter, QColor, QPen, QBrush
 from PySide6.QtWidgets import QApplication
 
@@ -7,12 +8,13 @@ from tests.pixmap_differ import PixmapDiffer
 
 
 @pytest.fixture(scope='session')
-def pixmap_differ():
-    app = QApplication()
+def qt_application():
+    return QApplication()
 
+
+@pytest.fixture(scope='session')
+def pixmap_differ(qt_application):
     yield PixmapDiffer()
-
-    assert app
 
 
 @pytest.fixture()
@@ -476,3 +478,26 @@ def test_draw_grid_with_selected_row(pixmap_differ, symbol_clues):
     shuffler2.draw_grid(art)
 
     pixmap_differ.assert_equal()
+
+
+def test_select_clue(qt_application):
+    display_image = QPixmap(180, 180)
+    clue_image = QPixmap(100, 100)
+    art_image = QPixmap(1000, 1000)
+    clues = [clue_image] * 2
+    shuffler = ArtShuffler(2,
+                            2,
+                            display_image,
+                            row_clues=clues,
+                            column_clues=clues)
+
+    shuffler.draw_grid(art_image)
+    shuffler.select_clue(QPoint(30, 150))
+
+    assert shuffler.selected_row == 1
+    assert shuffler.selected_column is None
+
+    shuffler.select_clue(QPoint(150, 30))
+
+    assert shuffler.selected_row is None
+    assert shuffler.selected_column == 1

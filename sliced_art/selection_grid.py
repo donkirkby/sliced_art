@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QBrush, QPainterPath, QPainter, QColor, QPen
-from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem
+from PySide6.QtWidgets import QGraphicsRectItem
 
 
 class SelectionGrid(QGraphicsRectItem):
@@ -38,8 +38,8 @@ class SelectionGrid(QGraphicsRectItem):
         self.mouse_press_pos = None
         self.mouse_press_rect = None
         self.setAcceptHoverEvents(True)
-        self.setFlag(QGraphicsItem.ItemIsMovable, True)
-        self.setFlag(QGraphicsItem.ItemIsSelectable, True)
+        self.setFlag(self.ItemIsMovable, True)
+        self.setFlag(self.ItemIsSelectable, True)
         self.row_count, self.column_count = row_count, column_count
 
         # Callback method for when this is moved.
@@ -86,7 +86,7 @@ class SelectionGrid(QGraphicsRectItem):
         """
         self.selected_handle = self.handle_at(event.pos())
         self.mouse_press_pos = event.pos()
-        self.mouse_press_rect = self.boundingRect()
+        self.mouse_press_rect = self.rect()
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
@@ -104,8 +104,8 @@ class SelectionGrid(QGraphicsRectItem):
         scene_rect = self.scene().sceneRect()
         view_left = scene_rect.left()
         view_top = scene_rect.top()
-        view_right = scene_rect.right()/2
-        view_bottom = scene_rect.bottom()
+        view_right = scene_rect.right() * 0.493
+        view_bottom = scene_rect.bottom() - 1
 
         # Next, check if the rectangle has been dragged out of bounds.
         if rect.top() < view_top:
