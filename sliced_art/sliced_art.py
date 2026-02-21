@@ -169,11 +169,17 @@ class MainWindow(QMainWindow):
 
     def shuffle(self):
         self.clues = self.word_shuffler.make_clues()
+        ui = self.ui
+        ui.action_shuffle.setChecked(True)
+        ui.action_sort.setChecked(False)
         if self.art_shuffler is not None:
             self.art_shuffler.shuffle()
             self.on_selection_moved()
 
     def sort(self):
+        ui = self.ui
+        ui.action_sort.setChecked(True)
+        ui.action_shuffle.setChecked(False)
         if self.art_shuffler is not None:
             self.art_shuffler.sort()
             self.on_selection_moved()
