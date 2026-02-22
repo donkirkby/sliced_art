@@ -4,7 +4,7 @@ from PySide6.QtGui import Qt, QPixmap, QPainter, QColor, QPen, QBrush
 from PySide6.QtWidgets import QApplication
 
 from sliced_art.art_shuffler import ArtShuffler
-from tests.pixmap_differ import PixmapDiffer
+from pixmap_differ import PixmapDiffer
 
 
 @pytest.fixture(scope='session')

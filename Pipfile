@@ -10,4 +10,4 @@ sliced-art = {editable = true, extras = ["dev"], path = "."}
 sliced-art = {editable = true, path = "."}
 
 [requires]
-python_version = "3.9"
+python_version = "3.13"
